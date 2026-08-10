@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.png" width="180" alt="Leafai Logo">
+</p>
+
 # 🌿 Leafai - Leafai -- Sağlıklı Toprak Sağlıklı Yaşam
 
   
@@ -164,3 +168,8 @@ Bu projedeki modelin eğitiminde kullanılan PlantVillage veri seti aşağıdaki
 - **Yazarlar:** David P. Hughes, Marcel Salathé (2015)
 - **Orijinal Yayın:** *Hughes, D., & Salathé, M. (2015). An open access repository of plant leaf images and diagnoses for plant disease detection. arXiv preprint arXiv:1511.08065.*
 - **Veri Seti Lisansı:** [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+## 👥 Geliştirici Ekibi (Team & Contributors)
+
+- **[Ahmet Buğra Girgin / BFM-lab](https://github.com/BFM-lab)** - Kurucu & Baş AI Mühendisi
+- **[Muhammed Emin Duyar / Joker-qp](https://github.com/Joker-qp)** - Yazılım Geliştirici (Co-Lead Developer)
