@@ -164,7 +164,7 @@ Bu proje **[CC BY-NC-SA 4.0 (Creative Commons Attribution-NonCommercial-ShareAli
 ### 📚 Veri Seti Atıfı (Dataset Attribution)
 Bu projedeki modelin eğitiminde kullanılan PlantVillage veri seti aşağıdaki akademik çalışmaya aittir:
 
-- **Veri Seti:** PlantVillage Dataset
+- **Veri Seti:** PlantVillage Dataset.
 - **Yazarlar:** David P. Hughes, Marcel Salathé (2015)
 - **Orijinal Yayın:** *Hughes, D., & Salathé, M. (2015). An open access repository of plant leaf images and diagnoses for plant disease detection. arXiv preprint arXiv:1511.08065.*
 - **Veri Seti Lisansı:** [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
