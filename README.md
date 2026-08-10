@@ -99,37 +99,48 @@ Epoch 10/10 (FineTune) | Val Acc: %99.28 | Loss: 0.0213 ⭐ (EN İYİ MODEL)
 
 
 🚀 Kurulum ve Çalıştırma
+```python
+Proje, işletim sisteminize uygun otomatik başlatma ve eğitim betikleri barındırır. Sanal ortam (`.venv`) ve kütüphaneler otomatik olarak yapılandırılır.
 
-1. Bağımlılıkları Yükleyin
+### 🐧 Linux / macOS Kullanıcıları İçin
+
+1. **İzinleri Verin (İlk Çalıştırmada Tek Seferlik):**
+   ```bash
+   chmod +x start.sh train.sh
+```
+
+1. **Web Uygulamasını Başlatmak İçin:**
+
+    ```python
+    ./start.sh
+    ```
+
+2. **Modeli Eğitmek İçin:**
+
+    ```python
+    ./train.sh
+    ```
+
+---
+
+### 🪟 Windows Kullanıcıları İçin
+
+- **Web Uygulamasını Başlatmak İçin:** start.bat dosyasına çift tıklayın. (Tarayıcınız http://127.0.0.1:8000 adresiyle otomatik açılacaktır).
+    
+- **Modeli Sıfırdan Eğitmek İçin:** train.bat dosyasına çift tıklayın.
+    
+
+---
+
+### 💻 Manuel Kurulum (Alternatif Terminal Kullanımı)
+
 ```python
 python -m venv .venv
-
-source .venv/bin/activate # Windows: .venv\Scripts\activate
-
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-
-2. Modeli Eğitin (Opsiyonel - Hazır model yoksa)
-
-```python
-python train_model.py --epochs 10 --warmup 3 --batch-size 32
-```
-
-1. Web Sunucusunu Başlatın
-
-```python
+# Web Sunucusunu Başlatma
 uvicorn main:app --reload
-
-Tarayıcınızda http://127.0.0.1:8000 adresine giderek uygulamayı kullanabilirsiniz.
-```
-
-🔄 Aktif Öğrenme ve Yeniden Eğitim
-
-Kullanıcıların web sitesinde ✏️ Düzelt butonuyla düzelttiği fotoğraflar data_pool/ dizininde toplanır. Bu verilerle modeli tek tıkla güncellemek için:
-
-```python
-python retrain.py
 ```
 
 🛠️ Kullanılan Teknolojiler
