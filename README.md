@@ -151,3 +151,16 @@ uvicorn main:app --reload
 | Image Processing | Pillow                                            |
 | Frontend         | HTML5, CSS3, JavaScript (Fetch API, MediaDevices) |
 | Data Source      | Kaggle PlantVillage Dataset (162k Images)<br>     |
+---
+
+## 📜 Lisans ve Atıf (License & Citation)
+
+Bu proje **[CC BY-NC-SA 4.0 (Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International)](https://creativecommons.org/licenses/by-nc-sa/4.0/)** lisansı altında yayınlanmıştır. 
+
+### 📚 Veri Seti Atıfı (Dataset Attribution)
+Bu projedeki modelin eğitiminde kullanılan PlantVillage veri seti aşağıdaki akademik çalışmaya aittir:
+
+- **Veri Seti:** PlantVillage Dataset
+- **Yazarlar:** David P. Hughes, Marcel Salathé (2015)
+- **Orijinal Yayın:** *Hughes, D., & Salathé, M. (2015). An open access repository of plant leaf images and diagnoses for plant disease detection. arXiv preprint arXiv:1511.08065.*
+- **Veri Seti Lisansı:** [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
