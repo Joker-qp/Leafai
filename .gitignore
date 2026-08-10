@@ -22,3 +22,6 @@ data/pending/
 
 # Kaggle / PyTorch Cache
 .cache/
+
+# Google Drive Gizli Anahtarı
+google_credentials.json
