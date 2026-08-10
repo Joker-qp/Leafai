@@ -1,0 +1,9 @@
+torch
+torchvision
+fastapi
+uvicorn
+python-multipart
+Pillow
+kagglehub
+tqdm
+python-dotenv

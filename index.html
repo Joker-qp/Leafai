@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>🌿 Leafai -- Sağlıklı Toprak Sağlıklı Yaşam</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-dark: #1b5e20;
+            --bg: #f1f8e9;
+            --card-bg: #ffffff;
+            --text: #1c313a;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 20px;
+            display: flex; justify-content: center;
+        }
+        .container {
+            width: 100%; max-width: 680px;
+            background: var(--card-bg);
+            padding: 25px; border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        h1 { text-align: center; color: var(--primary-dark); font-size: 24px; margin-bottom: 20px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn {
+            flex: 1; padding: 12px; border: none; background: #e8f5e9;
+            color: var(--primary-dark); font-weight: bold; border-radius: 8px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .content-box { display: none; text-align: center; }
+        .content-box.active { display: block; }
+        
+        video {
+            width: 100%; max-height: 300px; object-fit: cover;
+            border-radius: 12px; border: 2px solid #c8e6c9; margin-bottom: 15px;
+        }
+        input[type="file"] { display: none; }
+        .file-label, .action-btn {
+            display: inline-block; width: 100%; padding: 14px;
+            background: var(--primary); color: white; font-weight: bold;
+            border: none; border-radius: 8px; cursor: pointer;
+            box-sizing: border-box; text-align: center; transition: 0.2s;
+        }
+        .file-label:hover, .action-btn:hover { background: var(--primary-dark); }
+        
+        /* Sonuç Kartları */
+        #resultCard { margin-top: 25px; display: none; }
+        .file-result-card {
+            background: #f9f9f9; border: 1px solid #e0e0e0;
+            border-radius: 12px; padding: 15px; margin-bottom: 15px;
+            text-align: left;
+        }
+        .file-title { font-weight: bold; color: var(--primary-dark); margin-bottom: 10px; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .res-item { margin-bottom: 8px; }
+        .res-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; }
+        .bar-bg { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-top: 3px; }
+        .bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s; }
+        .loading { display: none; margin-top: 15px; color: var(--primary-dark); font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🌿 Yaprak Hastalığı Tespit Sistemi</h1>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('upload')">📁 Çoklu Dosya Yükle</button>
+        <button class="tab-btn" onclick="switchTab('camera')">📷 Canlı Kamera</button>
+        <div style="margin-bottom: 20px; text-align: left;">
+        <label for="plantFilter" style="font-weight: bold; font-size: 14px; color: var(--primary-dark);">🎯 Bitki Türü Filtresi (İsteğe Bağlı):</label>
+        <select id="plantFilter" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #c8e6c9; font-size: 14px;">
+            <option value="All">🌐 Tüm Bitkiler (Otomatik Teşhis)</option>
+            <option value="Apple">🍎 Elma (Apple)</option>
+            <option value="Cherry">🍒 Kiraz (Cherry)</option>
+            <option value="Corn">🌽 Mısır (Corn)</option>
+            <option value="Grape">🍇 Üzüm (Grape)</option>
+            <option value="Peach">🍑 Şeftali (Peach)</option>
+            <option value="Pepper">🫑 Biber (Pepper)</option>
+            <option value="Potato">🥔 Patates (Potato)</option>
+            <option value="Squash">🎃 Kabak (Squash)</option>
+            <option value="Strawberry">🍓 Çilek (Strawberry)</option>
+            <option value="Tomato">🍅 Domates (Tomato)</option>
+        </select>
+    </div>
+    </div>
+
+    <!-- 1. ÇOKLU DOSYA SEKMESİ -->
+    <div id="uploadBox" class="content-box active">
+        <!-- 'multiple' özelliği eklendi! -->
+        <label for="fileInput" class="file-label">Birden Fazla Fotoğraf Seç (Çoklu Seçim)</label>
+        <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(event)">
+    </div>
+
+    <!-- 2. CANLI KAMERA SEKMESİ -->
+    <div id="cameraBox" class="content-box">
+        <video id="webcam" autoplay playsinline></video>
+        <button class="action-btn" onclick="captureAndPredict()">📸 Fotoğraf Çek ve Analiz Et</button>
+        <canvas id="canvas" style="display:none;"></canvas>
+    </div>
+
+    <div id="loading" class="loading">⏳ Yapay zeka resimleri analiz ediyor...</div>
+
+    <!-- 3. TOPLU TAHMİN SONUÇLARI -->
+    <div id="resultCard">
+        <h3 style="color:var(--primary-dark); margin-bottom:15px;">📊 Analiz Raporu</h3>
+        <div id="predictionsList"></div>
+    </div>
+</div>
+
+<script>
+    let currentStream = null;
+
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.content-box').forEach(c => c.classList.remove('active'));
+
+        if(tab === 'upload') {
+            event.target.classList.add('active');
+            document.getElementById('uploadBox').classList.add('active');
+            stopCamera();
+        } else {
+            event.target.classList.add('active');
+            document.getElementById('cameraBox').classList.add('active');
+            startCamera();
+        }
+    }
+
+    async function startCamera() {
+        try {
+            currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            document.getElementById('webcam').srcObject = currentStream;
+        } catch (err) {
+            alert("Kameraya erişilemedi: " + err.message);
+        }
+    }
+
+    function stopCamera() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
+        }
+    }
+
+    // Çoklu Dosya Seçimi
+    function handleFileSelect(e) {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+        sendImagesToAPI(files);
+    }
+
+    // Kamera Çekimi
+    function captureAndPredict() {
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+
+        canvas.toBlob((blob) => {
+            const file = new File([blob], "camera_snap.jpg", { type: "image/jpeg" });
+            sendImagesToAPI([file]); // Tekli çekimi de dizi olarak yolluyoruz
+        }, 'image/jpeg');
+    }
+
+    // API'ye Çoklu Gönderim Yapan Fonksiyon
+    async function sendImagesToAPI(fileList) {
+        const formData = new FormData();
+        
+        // Seçilen TÜM dosyaları 'files' anahtarına ekliyoruz
+        for (let i = 0; i < fileList.length; i++) {
+            formData.append("files", fileList[i]);
+        }
+
+        const selectedFilter = document.getElementById("plantFilter").value;
+        formData.append("plant_filter", selectedFilter);
+
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('resultCard').style.display = 'none';
+
+        try {
+            const response = await fetch('/predict', { method: 'POST', body: formData });
+            const data = await response.json();
+
+            if (data.success) {
+                showBatchResults(data.batch_results);
+            } else {
+                alert("Hata: " + (data.detail || "Tahmin alınamadı"));
+            }
+        } catch (err) {
+            alert("Sunucuyla iletişim kurulamadı: " + err.message);
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    // Toplu Sonuç Kartlarını Çizdirme
+    function showBatchResults(batchResults) {
+        const list = document.getElementById('predictionsList');
+        list.innerHTML = '';
+
+        batchResults.forEach((item) => {
+            let cardHtml = `<div class="file-result-card" id="card-${item.image_id}">
+                <div class="file-title">📄 Dosya: ${item.filename}</div>`;
+
+            if (item.error) {
+                cardHtml += `<div style="color:red; font-size:13px;">${item.error}</div>`;
+            } else {
+                const topPred = item.predictions[0];
+                
+                item.predictions.forEach((p, idx) => {
+                    cardHtml += `
+                        <div class="res-item" style="${idx === 0 ? 'border-left: 3px solid var(--primary); padding-left: 8px;' : ''}">
+                            <div class="res-header">
+                                <span>🌱 <b>${p.plant_name}</b> - ${p.disease_name}</span>
+                                <span>%${p.confidence}</span>
+                            </div>
+                            <div class="bar-bg">
+                                <div class="bar-fill" style="width: ${p.confidence}%"></div>
+                            </div>
+                            ${p.warning ? `<div style="color:#d32f2f; font-size:11px; margin-top:2px;">${p.warning}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                // 💡 GERİ BİLDİRİM VE DÜZELTME BUTONLARI EKLENDİ
+                cardHtml += `
+                    <div style="margin-top:12px; padding-top:8px; border-top:1px dashed #ccc; font-size:12px;">
+                        <span>Bu tahmin doğru mu?</span>
+                        <button onclick="submitFeedback('${item.image_id}', true, '${topPred.raw_label}', '${topPred.raw_label}')" style="background:#2e7d32; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-left:5px;">✅ Evet</button>
+                        <button onclick="toggleCorrection('${item.image_id}')" style="background:#e53935; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-left:5px;">✏️ Düzelt</button>
+                    </div>
+
+                    <!-- Düzeltme Kutusu (Başlangıçta Gizli) -->
+                    <div id="corr-box-${item.image_id}" style="display:none; margin-top:10px; background:#fff3e0; padding:10px; border-radius:6px;">
+                        <label style="font-weight:bold; font-size:11px;">Doğru Bitkiyi/Hastalığı Seçin:</label>
+                        <select id="corr-select-${item.image_id}" style="width:100%; padding:6px; margin:5px 0; font-size:12px;">
+                            <option value="${topPred.raw_label}">${topPred.plant_name} - ${topPred.disease_name}</option>
+                            <option value="Tomato___Early_blight">Domates - Erken Yanıklık</option>
+                            <option value="Tomato___Late_blight">Domates - Geç Yanıklık</option>
+                            <option value="Potato___Early_blight">Patates - Erken Yanıklık</option>
+                            <option value="Potato___Late_blight">Patates - Geç Yanıklık</option>
+                            <option value="Apple___Apple_scab">Elma - Lekesi</option>
+                            <option value="Apple___healthy">Elma - Sağlıklı</option>
+                            <option value="Tomato___healthy">Domates - Sağlıklı</option>
+                        </select>
+                        <button onclick="submitCorrection('${item.image_id}', '${topPred.raw_label}')" style="width:100%; background:#1b5e20; color:white; border:none; padding:6px; border-radius:4px; cursor:pointer; font-weight:bold;">Doğrusunu Kaydet</button>
+                    </div>
+                `;
+            }
+
+            cardHtml += `</div>`;
+            list.innerHTML += cardHtml;
+        });
+
+        document.getElementById('resultCard').style.display = 'block';
+    }
+
+    function toggleCorrection(imageId) {
+        const box = document.getElementById(`corr-box-${imageId}`);
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function submitCorrection(imageId, predictedRaw) {
+        const selectedCorrectRaw = document.getElementById(`corr-select-${imageId}`).value;
+        submitFeedback(imageId, false, predictedRaw, selectedCorrectRaw);
+    }
+
+    async function submitFeedback(imageId, isCorrect, predictedRaw, correctRaw) {
+        const formData = new FormData();
+        formData.append("image_id", imageId);
+        formData.append("is_correct", isCorrect);
+        formData.append("predicted_raw", predictedRaw);
+        formData.append("correct_raw", correctRaw);
+
+        try {
+            const response = await fetch('/feedback', { method: 'POST', body: formData });
+            const data = await response.json();
+
+            if (data.success) {
+                const card = document.getElementById(`card-${imageId}`);
+                card.style.background = isCorrect ? '#e8f5e9' : '#ffebee';
+                card.innerHTML += `<div style="color:${isCorrect ? '#2e7d32' : '#c62828'}; font-weight:bold; font-size:12px; margin-top:8px;">✅ ${data.message}</div>`;
+            }
+        } catch (err) {
+            alert("Geri bildirim kaydedilemedi: " + err.message);
+        }
+    }
+</script>
+</body>
+</html>

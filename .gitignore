@@ -1,0 +1,24 @@
+# Python Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Sanal Ortam (Virtual Environment)
+.venv/
+venv/
+env/
+
+# Geçici Resimler ve Loglar
+data/pending/
+*.log
+
+# Ortam Değişkenleri (Hassas Bilgiler)
+.env
+
+# IDE ve Sistem Dosyaları
+.vscode/
+.idea/
+.DS_Store
+
+# Kaggle / PyTorch Cache
+.cache/
