@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" width="180" alt="Leafai Logo">
+  <img src="assets/logo.png" width="320" alt="Leafai Logo">
 </p>
 
 # 🌿 Leafai - Leafai -- Sağlıklı Toprak Sağlıklı Yaşam

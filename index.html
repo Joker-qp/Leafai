@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>🌿 Leafai -- Sağlıklı Toprak Sağlıklı Yaşam</title>
+    <title>🌿 Leafai -- Sağlıklı Toprak Sağlıklı Yaşam</title>
+
+    <!-- 🌿 TARAYICI SEKMESİ İKONU (FAVICON) -->
+    <link rel="icon" type="image/png" href="assets/Favicon.png?v=2">
+
     <style>
         :root {
             --primary: #2e7d32;
@@ -69,14 +73,18 @@
 <div class="container">
     <!-- 🌿 LOGO BÖLÜMÜ -->
     <div style="text-align: center; margin-bottom: 10px;">
-        <img src="assets/logo.png" alt="Leafai Logo" style="width: 90px; height: auto;">
+        <img src="assets/logo.png" alt="Leafai Logo" style="width: 320px; height: auto;">
     </div>
     <h1>🌿 Yaprak Hastalığı Tespit Sistemi</h1>
 
+    <!-- 1. SEKMELER (Sadece Butonlar Yan Yana) -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('upload')">📁 Çoklu Dosya Yükle</button>
         <button class="tab-btn" onclick="switchTab('camera')">📷 Canlı Kamera</button>
-        <div style="margin-bottom: 20px; text-align: left;">
+    </div>
+
+    <!-- 2. BİTKİ FİLTRESİ (SEKMELERİN ALTINDA DÜZGÜN HİZALANMIŞ) -->
+    <div style="margin-bottom: 20px; text-align: left;">
         <label for="plantFilter" style="font-weight: bold; font-size: 14px; color: var(--primary-dark);">🎯 Bitki Türü Filtresi (İsteğe Bağlı):</label>
         <select id="plantFilter" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #c8e6c9; font-size: 14px;">
             <option value="All">🌐 Tüm Bitkiler (Otomatik Teşhis)</option>
@@ -92,11 +100,9 @@
             <option value="Tomato">🍅 Domates (Tomato)</option>
         </select>
     </div>
-    </div>
 
-    <!-- 1. ÇOKLU DOSYA SEKMESİ -->
+    <!-- 3. ÇOKLU DOSYA SEKMESİ -->
     <div id="uploadBox" class="content-box active">
-        <!-- 'multiple' özelliği eklendi! -->
         <label for="fileInput" class="file-label">Birden Fazla Fotoğraf Seç (Çoklu Seçim)</label>
         <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(event)">
     </div>

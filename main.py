@@ -2,6 +2,7 @@ import io
 import os
 from typing import List
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from PIL import Image
 import uuid
@@ -26,6 +27,9 @@ app = FastAPI(
     version="2.0.0",
 )
 
+if os.path.exists("assets"):
+    app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+    
 # 2. Sunucu başlarken modeli RAM'e bir kez yüklüyoruz (Uygulama hızlı çalışsın diye)
 print("Model ve sunıflar yükleniyor...")
 MODEL, CLASS_NAMES = load_model_and_classes()
