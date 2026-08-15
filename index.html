@@ -3,311 +3,1749 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌿 Leafai -- Sağlıklı Toprak Sağlıklı Yaşam</title>
-
-    <!-- 🌿 TARAYICI SEKMESİ İKONU (FAVICON) -->
+    <title>🌿 Leafai — Sağlıklı Toprak Sağlıklı Yaşam</title>
     <link rel="icon" type="image/png" href="assets/Favicon.png?v=2">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* ============================================================
+           CSS DEĞİŞKENLERİ & TEMEL
+           ============================================================ */
         :root {
-            --primary: #2e7d32;
-            --primary-dark: #1b5e20;
-            --bg: #f1f8e9;
-            --card-bg: #ffffff;
+            --primary: #3f8f56;
+            --primary-dark: #00612c;
+            --primary-light: #6bbf8e;
+            --primary-50: #e8f5ec;
+            --primary-100: #c5e9d3;
+            --primary-200: #97d7b5;
+            --accent: #610035;
+            --danger: #8a1a4d;
+            --danger-light: #f8bbd9;
+            --info: #1565c0;
+            --info-light: #bbdefb;
+            --viral: #610035;
+            --viral-light: #f3e5f5;
+            --pest: #37474f;
+            --pest-light: #e0e0e0;
+            --bg-gradient-1: #e8f5ec;
+            --bg-gradient-2: #f1f8f4;
+            --bg-gradient-3: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.95);
             --text: #1c313a;
+            --text-secondary: #607d8b;
+            --text-light: #90a4ae;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.04);
+            --shadow-xl: 0 16px 48px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(160deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 40%, var(--bg-gradient-3) 100%);
             color: var(--text);
-            margin: 0; padding: 20px;
-            display: flex; justify-content: center;
+            min-height: 100vh;
+            padding: 24px 16px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(63,143,86,0.04) 0%, transparent 60%),
+                        radial-gradient(circle at 70% 80%, rgba(107,191,142,0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .container {
-            width: 100%; max-width: 680px;
+            width: 100%; max-width: 740px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ============================================================
+           ANA KART
+           ============================================================ */
+        .main-card {
             background: var(--card-bg);
-            padding: 25px; border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            padding: 32px;
+            border: 1px solid rgba(255,255,255,0.7);
+            transition: var(--transition);
         }
-        h1 { text-align: center; color: var(--primary-dark); font-size: 24px; margin-bottom: 20px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+
+        @media (max-width: 520px) {
+            body { padding: 12px 8px; }
+            .main-card { padding: 20px 16px; border-radius: var(--radius-lg); }
+        }
+
+        /* ============================================================
+           HEADER & LOGO
+           ============================================================ */
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .header-logo {
+            width: 200px;
+            height: auto;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 2px 8px rgba(63,143,86,0.15));
+            transition: var(--transition);
+        }
+        .header-logo:hover { transform: scale(1.02); }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-align: center;
+            position: relative;
+        }
+        .header-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-light), var(--primary));
+            border-radius: 2px;
+            margin: 8px auto 0;
+        }
+
+        .header-sub {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-weight: 400;
+        }
+
+        @media (max-width: 520px) {
+            .header-logo { width: 150px; }
+            .header-title { font-size: 17px; }
+        }
+
+        /* ============================================================
+           SEKMELER
+           ============================================================ */
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            background: var(--primary-50);
+            border-radius: var(--radius-md);
+            padding: 4px;
+        }
         .tab-btn {
-            flex: 1; padding: 12px; border: none; background: #e8f5e9;
-            color: var(--primary-dark); font-weight: bold; border-radius: 8px;
-            cursor: pointer; transition: 0.2s;
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            background: transparent;
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 13px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            white-space: nowrap;
         }
-        .tab-btn.active { background: var(--primary); color: white; }
-        .content-box { display: none; text-align: center; }
+        .tab-btn:hover { background: rgba(63,143,86,0.1); }
+        .tab-btn.active {
+            background: white;
+            color: var(--primary-dark);
+            box-shadow: var(--shadow-sm);
+        }
+        .content-box { display: none; animation: fadeUp 0.35s ease; }
         .content-box.active { display: block; }
-        
-        video {
-            width: 100%; max-height: 300px; object-fit: cover;
-            border-radius: 12px; border: 2px solid #c8e6c9; margin-bottom: 15px;
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-        input[type="file"] { display: none; }
-        .file-label, .action-btn {
-            display: inline-block; width: 100%; padding: 14px;
-            background: var(--primary); color: white; font-weight: bold;
-            border: none; border-radius: 8px; cursor: pointer;
-            box-sizing: border-box; text-align: center; transition: 0.2s;
+
+        /* ============================================================
+           FİLTRE SEÇİMİ
+           ============================================================ */
+        .filter-group {
+            margin-bottom: 20px;
         }
-        .file-label:hover, .action-btn:hover { background: var(--primary-dark); }
-        
-        /* Sonuç Kartları */
-        #resultCard { margin-top: 25px; display: none; }
+        .filter-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .filter-select {
+            width: 100%;
+            padding: 11px 14px;
+            border: 2px solid var(--primary-100);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23607d8b' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 12px center;
+            appearance: none;
+            color: var(--text);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(63,143,86,0.12);
+        }
+
+        /* ============================================================
+           DOSYA YÜKLEME ALANI
+           ============================================================ */
+        .upload-zone {
+            position: relative;
+            border: 2px dashed var(--primary-200);
+            border-radius: var(--radius-lg);
+            padding: 44px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: linear-gradient(135deg, rgba(200,230,201,0.2) 0%, rgba(255,255,255,0.5) 100%);
+        }
+        .upload-zone:hover,
+        .upload-zone.dragover {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(200,230,201,0.4) 0%, rgba(255,255,255,0.7) 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(63,143,86,0.10);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+            opacity: 0.8;
+        }
+        .upload-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+        }
+        .upload-sub {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .upload-sub span {
+            background: var(--primary-100);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        /* ============================================================
+           KAMERA
+           ============================================================ */
+        .camera-box {
+            position: relative;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: #000;
+            margin-bottom: 12px;
+        }
+        .camera-box video {
+            width: 100%;
+            max-height: 340px;
+            object-fit: cover;
+            display: block;
+        }
+        .camera-box .camera-overlay {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            font-weight: 700;
+            font-size: 15px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(63,143,86,0.25);
+        }
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(63,143,86,0.35);
+        }
+        .action-btn:active { transform: translateY(0); }
+
+        /* ============================================================
+           YÜKLEME ANİMASYONU
+           ============================================================ */
+        .loading {
+            display: none;
+            margin-top: 16px;
+            text-align: center;
+        }
+        .loading-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--primary-50);
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: 1px solid var(--primary-100);
+        }
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--primary-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--primary-dark);
+        }
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0%   { content: ''; }
+            25%  { content: '.'; }
+            50%  { content: '..'; }
+            75%  { content: '...'; }
+        }
+
+        /* ============================================================
+           SONUÇ KARTLARI
+           ============================================================ */
+        #resultCard { margin-top: 24px; display: none; }
+        .section-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--primary-100), transparent);
+        }
+
         .file-result-card {
-            background: #f9f9f9; border: 1px solid #e0e0e0;
-            border-radius: 12px; padding: 15px; margin-bottom: 15px;
-            text-align: left;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            animation: fadeUp 0.4s ease;
         }
-        .file-title { font-weight: bold; color: var(--primary-dark); margin-bottom: 10px; font-size: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .res-item { margin-bottom: 8px; }
-        .res-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; }
-        .bar-bg { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-top: 3px; }
-        .bar-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s; }
-        .loading { display: none; margin-top: 15px; color: var(--primary-dark); font-weight: bold; text-align: center; }
+        .file-result-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .file-title-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--primary-50);
+        }
+        .file-title-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-50);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .file-title-text {
+            font-weight: 600;
+            color: var(--primary-dark);
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .res-item {
+            margin-bottom: 8px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+        .res-item:hover { background: rgba(0,0,0,0.02); }
+        .res-item.top-result {
+            background: linear-gradient(135deg, rgba(200,230,201,0.25) 0%, rgba(255,255,255,0.5) 100%);
+            border-left: 3px solid var(--primary);
+        }
+        .res-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .res-label { font-weight: 600; color: var(--text); }
+        .res-pct {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--primary-dark);
+        }
+        .res-pct.high { color: var(--primary); }
+        .res-pct.med { color: var(--accent); }
+        .res-pct.low { color: var(--danger); }
+
+        .bar-bg {
+            height: 6px;
+            background: var(--primary-100);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--primary-light), var(--primary));
+            width: 0%;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bar-fill.med { background: linear-gradient(90deg, #f8bbd9, var(--accent)); }
+        .bar-fill.low { background: linear-gradient(90deg, #ef9a9a, var(--danger)); }
+
+        .warning-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--danger);
+            background: var(--danger-light);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* ============================================================
+           BAKIM KARTI
+           ============================================================ */
+        .care-card {
+            margin-top: 12px;
+            background: linear-gradient(135deg, #f1f8e9 0%, #ffffff 100%);
+            border: 1px solid var(--primary-100);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            border-left: 4px solid var(--primary);
+        }
+        .care-card.bacterial { border-left-color: var(--danger); }
+        .care-card.viral { border-left-color: var(--viral); }
+        .care-card.pest { border-left-color: var(--pest); }
+        .care-card.healthy { border-left-color: var(--primary); }
+        .care-card.unknown { border-left-color: var(--text-light); }
+
+        .care-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .care-header h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin: 0;
+        }
+        .care-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+        .tag-healthy { background: var(--primary-100); color: var(--primary-dark); }
+        .tag-fungal { background: #fce4ec; color: #8a1a4d; }
+        .tag-bacterial { background: var(--danger-light); color: #b71c1c; }
+        .tag-viral { background: var(--viral-light); color: #4a148c; }
+        .tag-pest { background: var(--pest-light); color: var(--pest); }
+        .tag-chemical { background: #fce4ec; color: #880e4f; }
+        .tag-note { background: #fff9c4; color: #f57f17; }
+
+        .care-body { font-size: 13px; line-height: 1.6; }
+        .care-item {
+            margin-bottom: 6px;
+            padding: 6px 10px;
+            background: rgba(255,255,255,0.7);
+            border-radius: var(--radius-sm);
+        }
+        .care-item strong { color: var(--primary-dark); font-weight: 600; }
+
+        /* ============================================================
+           GERİ BİLDİRİM BUTONLARI
+           ============================================================ */
+        .feedback-area {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--primary-100);
+        }
+        .feedback-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .feedback-btns {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .fb-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 7px 16px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .fb-btn:hover { transform: translateY(-1px); }
+        .fb-btn-correct { background: var(--primary-50); color: var(--primary-dark); }
+        .fb-btn-correct:hover { background: var(--primary-100); }
+        .fb-btn-correct:active { background: var(--primary-200); }
+        .fb-btn-edit { background: #fff3e0; color: #e65100; }
+        .fb-btn-edit:hover { background: #ffe0b2; }
+
+        .correction-box {
+            display: none;
+            margin-top: 10px;
+            background: #fff8e1;
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid #ffe082;
+        }
+        .correction-box.show { display: block; }
+        .correction-box label {
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--accent);
+            display: block;
+            margin-bottom: 6px;
+        }
+        .correction-box select {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #ffe082;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-family: inherit;
+            margin-bottom: 8px;
+            background: white;
+        }
+        .save-btn {
+            width: 100%;
+            padding: 9px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .save-btn:hover { opacity: 0.9; }
+
+        .feedback-msg {
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+        }
+        .feedback-msg.success { background: var(--primary-50); color: var(--primary-dark); }
+        .feedback-msg.info { background: #e3f2fd; color: var(--info); }
+
+        /* ============================================================
+           GEÇMİŞ PANELİ
+           ============================================================ */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .history-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .history-header-left h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+        .history-count-badge {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: var(--primary-50);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        .history-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .h-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 7px 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .h-btn:hover { transform: translateY(-1px); }
+        .h-btn-refresh { background: var(--primary-50); color: var(--primary-dark); }
+        .h-btn-refresh:hover { background: var(--primary-100); }
+        .h-btn-clear { background: #ffebee; color: var(--danger); }
+        .h-btn-clear:hover { background: var(--danger-light); }
+
+        .history-empty {
+            text-align: center;
+            padding: 48px 20px;
+        }
+        .history-empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+        .history-empty-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .history-empty-sub {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .history-item {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            animation: fadeUp 0.35s ease;
+            border-left: 3px solid var(--primary-200);
+        }
+        .history-item:hover { box-shadow: var(--shadow-md); }
+        .history-item.correct   { border-left-color: var(--primary); }
+        .history-item.wrong     { border-left-color: var(--danger); }
+        .history-item.pending   { border-left-color: var(--accent); }
+
+        .h-date {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .h-result {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .h-badge {
+            display: inline-block;
+            padding: 1px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .h-badge-correct { background: var(--primary-100); color: var(--primary-dark); }
+        .h-badge-wrong { background: var(--danger-light); color: var(--danger); }
+        .h-badge-pending { background: #fff9c4; color: #f57f17; }
+
+        .h-detail {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        .h-detail-toggle {
+            background: none;
+            border: 1px solid var(--primary-100);
+            color: var(--primary-dark);
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 6px;
+            font-family: inherit;
+        }
+        .h-detail-toggle:hover { background: var(--primary-50); }
+
+        .h-detail-box {
+            display: none;
+            margin-top: 8px;
+            background: var(--primary-50);
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+        }
+        .h-detail-box.show { display: block; }
+
+        /* ============================================================
+           TOAST BİLDİRİMLERİ
+           ============================================================ */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 360px;
+        }
+        .toast {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--primary);
+            animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 13px;
+        }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.success { border-left-color: var(--primary); }
+        .toast-icon { font-size: 18px; flex-shrink: 0; }
+        .toast-msg { flex: 1; line-height: 1.4; }
+        .toast-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.4;
+            transition: var(--transition);
+            padding: 0 2px;
+        }
+        .toast-close:hover { opacity: 0.8; }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0); }
+            to   { opacity: 0; transform: translateX(30px); }
+        }
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        .footer {
+            margin-top: 28px;
+            padding-top: 16px;
+            border-top: 1px solid var(--primary-50);
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-light);
+        }
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .footer a:hover { text-decoration: underline; }
+
+        /* ============================================================
+           SCROLLBAR
+           ============================================================ */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-100); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-200); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- 🌿 LOGO BÖLÜMÜ -->
-    <div style="text-align: center; margin-bottom: 10px;">
-        <img src="assets/logo.png" alt="Leafai Logo" style="width: 320px; height: auto;">
-    </div>
-    <h1>🌿 Yaprak Hastalığı Tespit Sistemi</h1>
+<div class="container main-card">
 
-    <!-- 1. SEKMELER (Sadece Butonlar Yan Yana) -->
+    <!-- ========== HEADER ========== -->
+    <header class="header">
+        <img src="assets/logo.png" alt="Leafai Logo" class="header-logo">
+        <h1 class="header-title">Yaprak Hastalığı Tespit Sistemi</h1>
+        <p class="header-sub">🌱 Bitkinizin yaprağını fotoğraflayın, yapay zeka teşhis etsin</p>
+    </header>
+
+    <!-- ========== SEKMELER ========== -->
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('upload')">📁 Çoklu Dosya Yükle</button>
-        <button class="tab-btn" onclick="switchTab('camera')">📷 Canlı Kamera</button>
+        <button class="tab-btn active" onclick="switchTab('upload', this)">📁 Dosya Yükle</button>
+        <button class="tab-btn" onclick="switchTab('camera', this)">📷 Kamera</button>
+        <button class="tab-btn" onclick="switchTab('history', this)">📜 Geçmiş</button>
     </div>
 
-    <!-- 2. BİTKİ FİLTRESİ (SEKMELERİN ALTINDA DÜZGÜN HİZALANMIŞ) -->
-    <div style="margin-bottom: 20px; text-align: left;">
-        <label for="plantFilter" style="font-weight: bold; font-size: 14px; color: var(--primary-dark);">🎯 Bitki Türü Filtresi (İsteğe Bağlı):</label>
-        <select id="plantFilter" style="width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #c8e6c9; font-size: 14px;">
+    <!-- ========== FİLTRE ========== -->
+    <div class="filter-group">
+        <label class="filter-label" for="plantFilter">🎯 Bitki Türü Filtresi (isteğe bağlı)</label>
+        <select id="plantFilter" class="filter-select">
             <option value="All">🌐 Tüm Bitkiler (Otomatik Teşhis)</option>
-            <option value="Apple">🍎 Elma (Apple)</option>
-            <option value="Cherry">🍒 Kiraz (Cherry)</option>
-            <option value="Corn">🌽 Mısır (Corn)</option>
-            <option value="Grape">🍇 Üzüm (Grape)</option>
-            <option value="Peach">🍑 Şeftali (Peach)</option>
-            <option value="Pepper">🫑 Biber (Pepper)</option>
-            <option value="Potato">🥔 Patates (Potato)</option>
-            <option value="Squash">🎃 Kabak (Squash)</option>
-            <option value="Strawberry">🍓 Çilek (Strawberry)</option>
-            <option value="Tomato">🍅 Domates (Tomato)</option>
+            <option value="Apple">🍎 Elma</option>
+            <option value="Cherry">🍒 Kiraz</option>
+            <option value="Corn">🌽 Mısır</option>
+            <option value="Grape">🍇 Üzüm</option>
+            <option value="Peach">🍑 Şeftali</option>
+            <option value="Pepper">🫑 Biber</option>
+            <option value="Potato">🥔 Patates</option>
+            <option value="Squash">🎃 Kabak</option>
+            <option value="Strawberry">🍓 Çilek</option>
+            <option value="Tomato">🍅 Domates</option>
         </select>
     </div>
 
-    <!-- 3. ÇOKLU DOSYA SEKMESİ -->
+    <!-- ========== DOSYA YÜKLEME ========== -->
     <div id="uploadBox" class="content-box active">
-        <label for="fileInput" class="file-label">Birden Fazla Fotoğraf Seç (Çoklu Seçim)</label>
-        <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(event)">
+        <div class="upload-zone" id="uploadZone"
+             onclick="document.getElementById('fileInput').click()"
+             ondragover="this.classList.add('dragover'); event.preventDefault()"
+             ondragleave="this.classList.remove('dragover')"
+             ondrop="event.preventDefault(); this.classList.remove('dragover'); handleDrop(event)">
+            <span class="upload-icon">🍃</span>
+            <div class="upload-title">Fotoğrafları Buraya Sürükleyin</div>
+            <div class="upload-sub">
+                veya <span>tıklayarak seçin</span> &nbsp;·&nbsp; Çoklu seçim desteklenir
+            </div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple onchange="handleFileSelect(event)" style="display:none;">
     </div>
 
-    <!-- 2. CANLI KAMERA SEKMESİ -->
+    <!-- ========== KAMERA ========== -->
     <div id="cameraBox" class="content-box">
-        <video id="webcam" autoplay playsinline></video>
+        <div class="camera-box">
+            <video id="webcam" autoplay playsinline></video>
+            <span class="camera-overlay">📷 Canlı Görüntü</span>
+        </div>
         <button class="action-btn" onclick="captureAndPredict()">📸 Fotoğraf Çek ve Analiz Et</button>
         <canvas id="canvas" style="display:none;"></canvas>
     </div>
 
-    <div id="loading" class="loading">⏳ Yapay zeka resimleri analiz ediyor...</div>
+    <!-- ========== GEÇMİŞ ========== -->
+    <div id="historyBox" class="content-box">
+        <div class="history-header">
+            <div class="history-header-left">
+                <h3>📜 Tahmin Geçmişi</h3>
+                <span class="history-count-badge" id="historyCount">0 kayıt</span>
+            </div>
+            <div class="history-actions">
+                <button class="h-btn h-btn-refresh" onclick="renderHistory()">🔄 Yenile</button>
+                <button class="h-btn h-btn-clear" onclick="clearHistory()">🗑️ Temizle</button>
+            </div>
+        </div>
+        <div id="historyList"></div>
+    </div>
 
-    <!-- 3. TOPLU TAHMİN SONUÇLARI -->
+    <!-- ========== YÜKLEME ANİMASYONU ========== -->
+    <div id="loading" class="loading">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <span class="loading-text">Yapay zeka resimleri analiz ediyor<span class="loading-dots"></span></span>
+        </div>
+    </div>
+
+    <!-- ========== SONUÇLAR ========== -->
     <div id="resultCard">
-        <h3 style="color:var(--primary-dark); margin-bottom:15px;">📊 Analiz Raporu</h3>
+        <div class="section-title">📊 Analiz Raporu</div>
         <div id="predictionsList"></div>
     </div>
-    <!-- 📜 TELİF VE LİSANS DİPNOTU -->
-    <footer style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #e0e0e0; text-align: center; font-size: 11px; color: #666;">
-        Leafai © 2026 | PlantVillage Veri Seti kullanılarak eğitilmiştir 
-        (<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" style="color: var(--primary-dark); font-weight: bold; text-decoration: none;">CC BY-NC-SA 4.0</a>)
+
+    <!-- ========== TOAST KONTEYNERİ ========== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer">
+        Leafai © 2026 &nbsp;·&nbsp; PlantVillage Veri Seti ile eğitilmiştir &nbsp;·&nbsp;
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a>
     </footer>
 </div>
 
 <script>
-    let currentStream = null;
+// ============================================================
+// TOAST BİLDİRİM SİSTEMİ
+// ============================================================
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icon = type === 'error' ? '❌' : '✅';
+    toast.innerHTML = `
+        <span class="toast-icon">${icon}</span>
+        <span class="toast-msg">${message}</span>
+        <button class="toast-close" onclick="this.parentElement.style.animation='toastOut 0.3s forwards';setTimeout(()=>this.parentElement.remove(),300)">×</button>
+    `;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'toastOut 0.3s forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
 
-    function switchTab(tab) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.content-box').forEach(c => c.classList.remove('active'));
-
-        if(tab === 'upload') {
-            event.target.classList.add('active');
-            document.getElementById('uploadBox').classList.add('active');
-            stopCamera();
-        } else {
-            event.target.classList.add('active');
-            document.getElementById('cameraBox').classList.add('active');
-            startCamera();
-        }
-    }
-
-    async function startCamera() {
-        try {
-            currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-            document.getElementById('webcam').srcObject = currentStream;
-        } catch (err) {
-            alert("Kameraya erişilemedi: " + err.message);
-        }
-    }
-
-    function stopCamera() {
-        if (currentStream) {
-            currentStream.getTracks().forEach(track => track.stop());
-            currentStream = null;
-        }
-    }
-
-    // Çoklu Dosya Seçimi
-    function handleFileSelect(e) {
-        const files = e.target.files;
-        if (!files || files.length === 0) return;
+// ============================================================
+// SÜRÜKLE-BIRAK DESTEĞİ
+// ============================================================
+function handleDrop(e) {
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
         sendImagesToAPI(files);
     }
+}
 
-    // Kamera Çekimi
-    function captureAndPredict() {
-        const video = document.getElementById('webcam');
-        const canvas = document.getElementById('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0);
+// ============================================================
+// BAKIM VE TEDAVİ VERİ TABANI (TÜRKÇE)
+// ============================================================
+const CARE_DATABASE = {
+    "Apple___Apple_scab": {
+        name_tr: "Elma Kara Lekesi",
+        type: "fungal",
+        description: "Elma ağaçlarında görülen mantar kaynaklı bir hastalıktır. Yapraklarda ve meyvelerde zeytin yeşili veya siyah lekeler oluşur.",
+        symptoms: "Yapraklarda zeytin yeşili-siyah lekeler, meyvelerde çatlak ve siyah kabuklu lekeler, erken yaprak dökümü.",
+        prevention: "Dirençli elma çeşitleri tercih edin. Sonbaharda dökülen yaprakları toplayıp imha edin. Budama ile hava sirkülasyonunu artırın.",
+        treatment: "Bakırlı mantar ilaçları (bordo bulamacı) uygulayın. İlkbaharda tomurcuk patlaması öncesi koruyucu ilaçlama yapın. Yağışlı dönemlerde ilaçlamayı tekrarlayın.",
+        care: "Ağacın altına dökülen yaprakları mutlaka temizleyin. Yağmurlama sulama yerine damla sulama tercih edin.",
+        chemicals: "Bakır oksiklorür, Maneb, Captan",
+        urgency: "🟡 Orta — Erken müdahale edilmezse meyve kalitesini düşürür."
+    },
+    "Apple___Black_rot": {
+        name_tr: "Elma Siyah Çürüklüğü",
+        type: "fungal",
+        description: "Elma, armut ve ayvada görülen mantari bir hastalıktır. Meyvelerde siyah çürüklük, yapraklarda mor-siyah lekelere neden olur.",
+        symptoms: "Yapraklarda mor-siyah lekeler, meyvelerde kahverengi-siyah çürüklük, dallarda kanser yaraları.",
+        prevention: "Hastalıklı dalları budayıp temizleyin. Ağaç tacını seyrelterek havalanmayı artırın. Dengeli gübreleme yapın.",
+        treatment: "Bakırlı fungisitler veya kükürtlü preparatlar uygulayın. İlkbahar ve sonbaharda koruyucu ilaçlama yapın.",
+        care: "Budama yaralarını aşı macunu ile kapatın. Hastalıklı meyveleri toplayıp uzaklaştırın.",
+        chemicals: "Bakır oksiklorür, Kükürt, Captan",
+        urgency: "🟡 Orta — Meyve kaybına yol açar."
+    },
+    "Apple___Cedar_apple_rust": {
+        name_tr: "Elma Sedir Pası",
+        type: "fungal",
+        description: "Sedir ve ardıç ağaçlarından bulaşan bir pas mantarı hastalığıdır. Yapraklarda turuncu-sarı lekelere yol açar.",
+        symptoms: "Yapraklarda parlak turuncu lekeler, alt yüzeyde küçük siyah noktalar, erken yaprak dökümü.",
+        prevention: "Elma bahçesi yakınında sedir/ardıç ağacı bulundurmayın. Pasa dayanıklı elma çeşitleri seçin.",
+        treatment: "Kükürtlü veya bakırlı mantar ilaçları uygulayın. İlk belirtiler görüldüğünde ilaçlamaya başlayın.",
+        care: "Hastalıklı yaprakları toplayın. Yakın çevredeki ardıçları kontrol edin.",
+        chemicals: "Kükürt, Mancozeb, Miklobutanil",
+        urgency: "🟡 Orta — Verim kaybına neden olabilir."
+    },
+    "Apple___healthy": {
+        name_tr: "Elma — Sağlıklı",
+        type: "healthy",
+        description: "Elma yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        prevention: "Düzenli bakım ve kontrole devam edin. İyi havalanan, güneş alan bir ortam sağlayın.",
+        care: "Düzenli sulama (toprak nemini kontrol ederek), ilkbaharda dengeli gübreleme, kuru ve hastalıklı dalları budama.",
+        treatment: "Şu an herhangi bir müdahaleye gerek yoktur. Koruyucu önlemlere devam edin.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    },
+    "Blueberry___healthy": {
+        name_tr: "Yaban Mersini — Sağlıklı",
+        type: "healthy",
+        description: "Yaban mersini yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        prevention: "Asidik toprak pH'ını (4.5-5.5) koruyun. Düzenli sulama ve malçlama yapın.",
+        care: "Haftada 2-3 kez düzenli sulama, ilkbaharda asidofil gübre, yazın malçlama ile nem koruma.",
+        treatment: "Şu an herhangi bir müdahaleye gerek yoktur.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    },
+    "Cherry_(including_sour)___Powdery_mildew": {
+        name_tr: "Kiraz Külleme Hastalığı",
+        type: "fungal",
+        description: "Kiraz ve vişne ağaçlarında görülen külleme mantarı hastalığıdır. Yapraklarda beyaz unumsu tabaka oluşur.",
+        symptoms: "Yapraklarda beyaz tozumsu tabaka, kıvrılma ve erken dökülme, meyvelerde bodurlaşma.",
+        prevention: "Hava sirkülasyonu için düzenli budama. Aşırı azotlu gübrelemeden kaçının. Dirençli çeşitler seçin.",
+        treatment: "Kükürtlü ilaçlar veya potasyum bikarbonat uygulayın. İlk belirtilerde müdahale edin. 7-10 gün arayla tekrarlayın.",
+        care: "Yaprakları kuru tutmaya çalışın, tabandan sulama yapın. Hastalıklı sürgünleri budayın.",
+        chemicals: "Kükürt, Potasyum bikarbonat, Miklobutanil",
+        urgency: "🟡 Orta — Verim ve meyve kalitesini etkiler."
+    },
+    "Cherry_(including_sour)___healthy": {
+        name_tr: "Kiraz — Sağlıklı",
+        type: "healthy",
+        description: "Kiraz yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        prevention: "İlkbahar ve sonbaharda düzenli bakım, budama ve temizlik yapın.",
+        care: "Düzenli sulama, ilkbaharda organik gübre, kuru dalları budama, dip temizliği.",
+        treatment: "Herhangi bir müdahaleye gerek yoktur.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    },
+    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot": {
+        name_tr: "Mısır Gri Yaprak Lekesi",
+        type: "fungal",
+        description: "Mısırda görülen mantar kaynaklı bir yaprak leke hastalığıdır. Yapraklarda gri-kahverengi dikdörtgen lekeler oluşur.",
+        symptoms: "Yapraklarda gri-kahverengi dikdörtgen lekeler, alt yapraklardan başlayarak yukarı yayılma, erken kuruma.",
+        prevention: "Dayanıklı mısır çeşitleri seçin. Münavebe (ekim nöbeti) uygulayın. Sık ekimden kaçının.",
+        treatment: "Triazol veya strobilurin grubu mantar ilaçları uygulayın. İlk belirtiler görüldüğünde müdahale edin.",
+        care: "Hasat sonrası bitki artıklarını toprağa karıştırın. Azotlu gübrelemeyi dengeli yapın.",
+        chemicals: "Azoxystrobin, Propiconazole, Tebuconazole",
+        urgency: "🔴 Yüksek — Verim kaybı %30-50'ye ulaşabilir."
+    },
+    "Corn_(maize)___Common_rust_": {
+        name_tr: "Mısır Adi Pas",
+        type: "fungal",
+        description: "Mısır bitkisinde görülen pas mantarı hastalığıdır. Yapraklarda kırmızımsı-kahverengi püstüller oluşur.",
+        symptoms: "Yapraklarda kırmızımsı-kahverengi püstüller, erken yaprak kuruması, verim kaybı.",
+        prevention: "Pas hastalığına dayanıklı mısır çeşitleri tercih edin. Erken ekim yaparak hastalıktan kaçının.",
+        treatment: "Mantar ilaçları (triazol ve strobilurin karışımı) uygulayın. İlk püstüller görüldüğünde hemen müdahale edin.",
+        care: "Aşırı azotlu gübrelemeden kaçının. Bitki yoğunluğunu azaltarak hava sirkülasyonunu iyileştirin.",
+        chemicals: "Tebuconazole, Azoxystrobin, Pyraclostrobin",
+        urgency: "🟡 Orta — Erken dönemde müdahale edilmezse yayılır."
+    },
+    "Corn_(maize)___Northern_Leaf_Blight": {
+        name_tr: "Mısır Kuzey Yaprak Yanıklığı",
+        type: "fungal",
+        description: "Serin ve nemli bölgelerde mısırda görülen bir mantar hastalığıdır. Yapraklarda büyük gri-yeşil lekelere neden olur.",
+        symptoms: "Yapraklarda büyük gri-yeşil veya saman rengi lekeler, lekelerin birleşerek tüm yaprağı kaplaması.",
+        prevention: "Dayanıklı melez çeşitler seçin. Toprak işleme ile bitki artıklarını gömün. 2-3 yıllık münavebe uygulayın.",
+        treatment: "Yaprak lekesi hastalıklarına ruhsatlı mantar ilaçları uygulayın. Tepe püskülü döneminde ilaçlama yapın.",
+        care: "Hasat sonrası derin sürüm yapın. Dengeli gübreleme ile bitki direncini artırın.",
+        chemicals: "Azoxystrobin, Propiconazole, Trifloxystrobin",
+        urgency: "🔴 Yüksek — Salgın durumunda ciddi verim kaybı."
+    },
+    "Corn_(maize)___healthy": {
+        name_tr: "Mısır — Sağlıklı",
+        type: "healthy",
+        description: "Mısır yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        prevention: "Düzenli bakım, dengeli gübreleme ve münavebe uygulamaya devam edin.",
+        care: "Düzenli sulama, büyüme döneminde azot ağırlıklı gübre, yabancı ot temizliği.",
+        treatment: "Herhangi bir müdahaleye gerek yoktur.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    },
+    "Grape___Black_rot": {
+        name_tr: "Üzüm Siyah Çürüklüğü",
+        type: "fungal",
+        description: "Asmalarda görülen ciddi bir mantar hastalığıdır. Meyvelerde mumyalaşma ve siyah çürüklük yapar.",
+        symptoms: "Yapraklarda kahverengi lekeler, sürgünlerde siyah yaralar, meyvelerde çökük kahverengi lekeler ve mumyalaşma.",
+        prevention: "Hastalıklı sürgün ve meyveleri budayın. Asma altını temiz tutun. Havalanma için budama yapın.",
+        treatment: "Koruyucu mantar ilacı uygulaması yapın. Çiçeklenme öncesi ve sonrası ilaçlama kritiktir. Yağışlı dönemlerde 10-14 gün arayla tekrarlayın.",
+        care: "Damla sulama kullanın, yaprakları ıslatmaktan kaçının. Hastalıklı salkımları toplayıp uzaklaştırın.",
+        chemicals: "Mancozeb, Captan, Miklobutanil, Bakırlı preparatlar",
+        urgency: "🔴 Yüksek — Kontrol edilmezse tüm ürün kaybı."
+    },
+    "Grape___Esca_(Black_Measles)": {
+        name_tr: "Üzüm Esca (Kara Kızamık)",
+        type: "fungal",
+        description: "Asmalarda görülen karmaşık bir mantar hastalığıdır. Odun dokusunda çürümeye ve yapraklarda tipik belirtilere neden olur.",
+        symptoms: "Yapraklarda damar aralarında klorotik-sarı alanlar, meyvelerde mor-siyah noktalar, gövdede yumuşak çürüklük.",
+        prevention: "Budama yaralarını koruyun. Hastalıklı asmaları söküp yakın. Sağlıklı fidan kullanın.",
+        treatment: "Maalesef etkili bir kimyasal mücadelesi yoktur. Koruyucu önlemler en etkili yöntemdir. Budama sonrası yara macunu uygulayın.",
+        care: "Budama aletlerini her asma arası %70 alkolle sterilize edin. Stresli asmaları destekleyici besleme yapın.",
+        chemicals: "Koruyucu olarak bakırlı preparatlar (kesin tedavi edici değil)",
+        urgency: "🔴 Yüksek — Tedavisi zor, koruyucu önlemler önemli."
+    },
+    "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": {
+        name_tr: "Üzüm Yaprak Yanıklığı",
+        type: "fungal",
+        description: "Asmalarda yaprak lekesi ve yanıklığına neden olan bir mantar hastalığıdır.",
+        symptoms: "Yapraklarda küçük kahverengi lekeler, lekelerin birleşmesiyle büyük yanık alanlar, erken yaprak dökümü.",
+        prevention: "Budama ile hava sirkülasyonunu artırın. Hastalıklı yaprakları temizleyin.",
+        treatment: "Bakırlı veya kükürtlü mantar ilaçları uygulayın. İlk belirtilerde müdahale edin.",
+        care: "Asma altı temizliğine önem verin. Dengeli sulama ve gübreleme yapın.",
+        chemicals: "Mancozeb, Bakır oksiklorür",
+        urgency: "🟡 Orta — Erken müdahale ile kontrol edilebilir."
+    },
+    "Grape___healthy": {
+        name_tr: "Üzüm — Sağlıklı",
+        type: "healthy",
+        description: "Asma yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        prevention: "Düzenli budama, bakım ve koruyucu uygulamalara devam edin.",
+        care: "İlkbahar budaması, düzenli sulama, organik gübreleme, yabancı ot kontrolü.",
+        treatment: "Herhangi bir müdahaleye gerek yoktur.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    },
+    "Orange___Haunglongbing_(Citrus_greening)": {
+        name_tr: "Turunçgil Yeşillenme (HLB / Huanglongbing)",
+        type: "bacterial",
+        description: "Turunçgillerin en ciddi hastalığıdır. Bakteriyel bir hastalık olup psillid böceği ile taşınır. Tedavisi yoktur.",
+        symptoms: "Yapraklarda asimetrik sararma, meyvelerde küçülme ve yeşil kalma, acı tat, dallarda geriye doğru ölüm.",
+        prevention: "Sertifikalı sağlıklı fidan kullanın. Psillid böceği ile mücadele edin. Hastalıklı ağaçları söküp imha edin.",
+        treatment: "Maalesef bilinen bir tedavisi yoktur. Enfekteli ağaçlar sökülmelidir. Diğer ağaçları korumak için psillid mücadelesi yapın.",
+        care: "Düzenli besleme ve sulama ile ağaç direncini artırın. Bölgenizde hastalık varsa karantina önlemlerine uyun.",
+        chemicals: "Psillid mücadelesi için insektisitler (hastalığın kendisine değil, vektörüne yönelik)",
+        urgency: "🔴 Çok Yüksek — Turunçgillerin en tehlikeli hastalığı, tedavisi yok."
+    },
+    "Peach___Bacterial_spot": {
+        name_tr: "Şeftali Bakteriyel Leke",
+        type: "bacterial",
+        description: "Şeftali, nektarin ve kayısıda görülen bakteriyel bir hastalıktır. Yapraklarda ve meyvelerde lekelere neden olur.",
+        symptoms: "Yapraklarda küçük mor-kahverengi lekeler, zamanla delikler oluşması, meyvelerde çökük kahverengi lekeler.",
+        prevention: "Dirençli çeşitler seçin. Kışın bakterisit uygulayın. Yağmurlama sulamadan kaçının.",
+        treatment: "Bakırlı bakterisitler uygulayın. Sonbahar yaprak dökümünde ve ilkbahar tomurcuk patlamasında ilaçlayın.",
+        care: "Aşırı azotlu gübrelemeden kaçının. Budama ile havalanmayı artırın.",
+        chemicals: "Bakır oksiklorür, Bakır hidroksit, Streptomycin",
+        urgency: "🟡 Orta — Meyve kalitesini ve verimi düşürür."
+    },
+    "Peach___healthy": {
+        name_tr: "Şeftali — Sağlıklı",
+        type: "healthy",
+        description: "Şeftali yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        care: "Düzenli sulama, ilkbahar ve yaz aylarında dengeli gübreleme, düzenli budama.",
+        treatment: "Herhangi bir müdahaleye gerek yoktur.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    },
+    "Pepper,_bell___Bacterial_spot": {
+        name_tr: "Biber Bakteriyel Leke",
+        type: "bacterial",
+        description: "Biber bitkisinde bakteriyel bir hastalıktır. Yapraklarda ve meyvelerde su emmiş lekelere neden olur.",
+        symptoms: "Yapraklarda küçük sarı-kahverengi lekeler, yaprak dökümü, meyvelerde kabarık kahverengi lekeler.",
+        prevention: "Sertifikalı tohum kullanın. Münavebe uygulayın (2-3 yıl aynı alana biber dikmeyin).",
+        treatment: "Bakırlı bakterisitler uygulayın. Enfekte bitkileri söküp uzaklaştırın.",
+        care: "Bitkileri tepe üstü sulamayın, damla sulama kullanın. Sıcak ve nemli dönemlerde dikkatli olun.",
+        chemicals: "Bakır hidroksit, Mancozeb",
+        urgency: "🟡 Orta — Yayılmadan kontrol altına alınmalı."
+    },
+    "Pepper,_bell___healthy": {
+        name_tr: "Biber — Sağlıklı",
+        type: "healthy",
+        description: "Biber yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        care: "Düzenli sulama, haftada bir sıvı gübreleme, alt yaprakları temizleme, yabancı ot kontrolü.",
+        treatment: "Herhangi bir müdahaleye gerek yoktur.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    },
+    "Potato___Early_blight": {
+        name_tr: "Patates Erken Yanıklık",
+        type: "fungal",
+        description: "Patateste görülen yaygın bir mantar hastalığıdır. Yapraklarda hedef tahtası benzeri eşmerkezli halkalar oluşur.",
+        symptoms: "Alt yapraklardan başlayan koyu kahverengi lekeler, eşmerkezli halka deseni, yaprakların sararıp kuruması.",
+        prevention: "Dayanıklı çeşitler seçin. Münavebe uygulayın. Hastalıksız tohumluk patates kullanın.",
+        treatment: "Mancozeb veya klorotalonil içeren mantar ilaçları uygulayın. 7-10 gün arayla tekrarlayın.",
+        care: "Bitki sıklığını azaltın. Yaprak ıslaklık süresini kısaltmak için sabah sulayın.",
+        chemicals: "Mancozeb, Klorotalonil, Bakır hidroksit",
+        urgency: "🟡 Orta — Kontrol edilmezse verim kaybı artar."
+    },
+    "Potato___Late_blight": {
+        name_tr: "Patates Geç Yanıklık (Mildiyö)",
+        type: "fungal",
+        description: "Patates ve domateste görülen en yıkıcı hastalıklardan biridir. Tarihte İrlanda Kıtlığı'na neden olmuştur.",
+        symptoms: "Yapraklarda soluk yeşil-siyah yağlı lekeler, beyaz küf tabakası (nemli dönemde), yumrularda kahverengi çürüklük.",
+        prevention: "Dayanıklı çeşitler kullanın. Hastalıklı yumruları dikmeyin. Sık bitki sıklığından kaçının.",
+        treatment: "Sistemik mantar ilaçları (metalaksil, dimetomorf) uygulayın. Serin ve nemli dönemlerde 5-7 gün arayla ilaçlama yapın.",
+        care: "Tespit edilir edilmez enfekteli bitkileri sökün. Hasat öncesi yeşil aksamı yakın.",
+        chemicals: "Metalaksil, Dimetomorf, Mancozeb, Klorotalonil",
+        urgency: "🔴 Çok Yüksek — Hızla yayılır, tüm ürünü yok edebilir."
+    },
+    "Potato___healthy": {
+        name_tr: "Patates — Sağlıklı",
+        type: "healthy",
+        description: "Patates yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        care: "Düzenli sulama, boğaz doldurma, dengeli gübreleme, yabancı ot mücadelesi.",
+        treatment: "Herhangi bir müdahaleye gerek yoktur.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    },
+    "Raspberry___healthy": {
+        name_tr: "Ahududu — Sağlıklı",
+        type: "healthy",
+        description: "Ahududu yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        care: "Düzenli sulama, ilkbahar budaması, organik gübreleme, destek sistemi kontrolü.",
+        treatment: "Herhangi bir müdahaleye gerek yoktur.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    },
+    "Soybean___healthy": {
+        name_tr: "Soya — Sağlıklı",
+        type: "healthy",
+        description: "Soya fasulyesi yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        care: "Düzenli sulama, büyüme döneminde azotlu gübre, yabancı ot kontrolü.",
+        treatment: "Herhangi bir müdahaleye gerek yoktur.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    },
+    "Squash___Powdery_mildew": {
+        name_tr: "Kabak Külleme",
+        type: "fungal",
+        description: "Kabak, salatalık ve kavun gibi kabakgillerde görülen yaygın bir mantar hastalığıdır.",
+        symptoms: "Yapraklarda beyaz unumsu tabaka, yaprakların sararması ve kuruması, meyve gelişiminde yavaşlama.",
+        prevention: "Hava sirkülasyonu için bitkileri seyreltin. Aşırı azotlu gübrelemeden kaçının. Dayanıklı çeşitler seçin.",
+        treatment: "Kükürtlü ilaçlar veya neem yağı uygulayın. Süt-su karışımı (%10 süt) da etkili olabilir.",
+        care: "Yaprakları ıslatmadan tabandan sulama yapın. Hastalıklı yaprakları budayın.",
+        chemicals: "Kükürt, Neem yağı, Potasyum bikarbonat",
+        urgency: "🟡 Orta — Verimi düşürür ama nadiren bitkiyi öldürür."
+    },
+    "Strawberry___Leaf_scorch": {
+        name_tr: "Çilek Yaprak Yanıklığı",
+        type: "fungal",
+        description: "Çilek bitkisinde görülen bir mantar hastalığıdır. Yaprak kenarlarında kırmızımsı-mor lekelere neden olur.",
+        symptoms: "Yaprak kenarlarında kırmızımsı-mor lekeler, kuruyup yanık görünümü alması, bitki zayıflığı.",
+        prevention: "Hastalıklı yaprakları temizleyin. Malçlama ile toprak kaynaklı bulaşmayı azaltın. 2-3 yılda bir yer değiştirin.",
+        treatment: "Mantar ilaçları uygulayın. Çiçeklenme döneminde ilaçlamaya özen gösterin.",
+        care: "Damla sulama kullanın. Fazla azottan kaçının. Havadar ortam sağlayın.",
+        chemicals: "Captan, Mancozeb, Bakır hidroksit",
+        urgency: "🟡 Orta — Bitkiyi zayıflatır, meyve verimini düşürür."
+    },
+    "Strawberry___healthy": {
+        name_tr: "Çilek — Sağlıklı",
+        type: "healthy",
+        description: "Çilek yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        care: "Düzenli sulama, malçlama, çiçeklenme öncesi gübreleme, kuru yaprak temizliği.",
+        treatment: "Herhangi bir müdahaleye gerek yoktur.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    },
+    "Tomato___Bacterial_spot": {
+        name_tr: "Domates Bakteriyel Leke",
+        type: "bacterial",
+        description: "Domates bitkisinde bakteriyel bir hastalıktır. Yapraklarda, gövdelerde ve meyvelerde küçük su emmiş lekelere neden olur.",
+        symptoms: "Yapraklarda küçük koyu kahverengi lekeler, meyvelerde kabarık siyah noktalar, yaprak kıvrılması.",
+        prevention: "Sertifikalı tohum kullanın. Ürün rotasyonu uygulayın. Yağmurlama sulamadan kaçının.",
+        treatment: "Bakırlı bakterisitler uygulayın. Enfekte bitkileri sökün.",
+        care: "Bitkileri destekleyin ve havadar tutun. Sulamada yaprakları ıslatmamaya dikkat edin.",
+        chemicals: "Bakır hidroksit, Mancozeb",
+        urgency: "🟡 Orta — Yayılması durumunda ciddi kayıp."
+    },
+    "Tomato___Early_blight": {
+        name_tr: "Domates Erken Yanıklık",
+        type: "fungal",
+        description: "Domates bitkisinde sık görülen bir mantar hastalığıdır. Alt yapraklardan başlayarak yayılır, hedef tahtası görünümlü lekeler oluşur.",
+        symptoms: "Alt yapraklarda eşmerkezli halkalı kahverengi lekeler, yaprakların sararıp dökülmesi, gövdede koyu lekeler.",
+        prevention: "Dayanıklı çeşitler seçin. Malç kullanın. Ürün rotasyonu yapın. Alt yaprakları budayın.",
+        treatment: "Bakırlı veya kükürtlü mantar ilaçları uygulayın. 7-10 gün arayla düzenli ilaçlama yapın.",
+        care: "Damla sulama tercih edin. Bitkileri uygun aralıklarla dikin. Hastalıklı alt yaprakları temizleyin.",
+        chemicals: "Bakır oksiklorür, Mancozeb, Klorotalonil",
+        urgency: "🔴 Yüksek — Kontrol edilmezse verim kaybı %50'ye ulaşır."
+    },
+    "Tomato___Late_blight": {
+        name_tr: "Domates Geç Yanıklık (Mildiyö)",
+        type: "fungal",
+        description: "Domates ve patateste görülen en yıkıcı hastalıktır. Hızla yayılır ve tüm bitkiyi kısa sürede yok edebilir.",
+        symptoms: "Yapraklarda büyük soluk yeşil-siyah yağlı lekeler, saplarda kahverengi lekeler, meyvelerde sert kahverengi çürüklük.",
+        prevention: "Hastalığa dayanıklı çeşitler seçin. Seralarda nem kontrolü yapın. Yağışlı dönemlerde koruyucu ilaçlama yapın.",
+        treatment: "Sistemik mantar ilaçları acilen uygulayın. Enfekte bitkileri hemen söküp imha edin. İlaçlamayı 5-7 günde bir tekrarlayın.",
+        care: "Yaprakların kuru kalmasını sağlayın. Bitkiler arası hava akışını iyileştirin. Sabah erken sulayın.",
+        chemicals: "Metalaksil, Dimetomorf, Mancozeb, Klorotalonil",
+        urgency: "🔴 Çok Yüksek — Acil müdahale gerektirir."
+    },
+    "Tomato___Leaf_Mold": {
+        name_tr: "Domates Yaprak Küfü",
+        type: "fungal",
+        description: "Özellikle seralarda domateste görülen bir mantar hastalığıdır. Yüksek nemli ortamlarda hızla yayılır.",
+        symptoms: "Yaprak alt yüzünde zeytin yeşili küf tabakası, üst yüzeyde sarı lekeler, yaprakların kıvrılıp dökülmesi.",
+        prevention: "Sera havalandırmasını iyileştirin. Nem oranını %85'in altında tutun. Sık dikimden kaçının.",
+        treatment: "Kükürt fumigasyonu veya mantar ilaçları uygulayın. Havalandırmayı artırın.",
+        care: "Alt yaprakları temizleyin. Sabah erken sulayın, gün içinde kurumasını sağlayın.",
+        chemicals: "Kükürt, Mancozeb, Miklobutanil",
+        urgency: "🟡 Orta — Serada hızla yayılır, erken müdahale gerekli."
+    },
+    "Tomato___Septoria_leaf_spot": {
+        name_tr: "Domates Septoria Yaprak Lekesi",
+        type: "fungal",
+        description: "Domates bitkisinin en yaygın yaprak hastalıklarından biridir. Alt yapraklardan başlayarak yukarı doğru ilerler.",
+        symptoms: "Alt yapraklarda küçük dairemsi gri-kahverengi lekeler, lekelerin ortasında siyah noktalar, yaprak dökümü.",
+        prevention: "Malç kullanarak toprak sıçramasını önleyin. Ürün rotasyonu yapın. Alt yaprakları düzenli temizleyin.",
+        treatment: "Bakırlı veya kükürtlü mantar ilaçları uygulayın. İlk belirtilerde müdahale edin.",
+        care: "Damla sulama kullanın. Bitkileri destekleyerek havalanmayı artırın. Düzenli olarak alt yaprakları temizleyin.",
+        chemicals: "Klorotalonil, Mancozeb, Bakır hidroksit",
+        urgency: "🟡 Orta — Erken dönemde kontrol altına alınmalı."
+    },
+    "Tomato___Spider_mites Two-spotted_spider_mite": {
+        name_tr: "Domates Kırmızı Örümcek (İki Noktalı Akar)",
+        type: "pest",
+        description: "Domates, salatalık, biber gibi birçok bitkide görülen bir zararlıdır. Sıcak ve kuru havalarda popülasyonu hızla artar.",
+        symptoms: "Yapraklarda sararma, alt yüzeyde ince örümcek ağları, yapraklarda kıvrılma ve kuruma, yaprak altında küçük kırmızı noktalar halinde akarlar.",
+        prevention: "Düzenli yaprak altı kontrolü yapın. Tozlu ortamlardan kaçının. Doğal düşmanları (predatör akar) kullanın.",
+        treatment: "Neem yağı veya akarisit uygulayın. Yaprak altına iyi nüfuz ettiğinden emin olun. Haftada bir tekrarlayın.",
+        care: "Yapraklara su püskürterek nemi artırın (akarlar kuru ortamı sever). Kurak dönemlerde daha sık kontrol edin.",
+        chemicals: "Neem yağı, Abamectin, Spinosad",
+        urgency: "🔴 Yüksek — Popülasyon hızla artar, bitkiyi zayıflatır."
+    },
+    "Tomato___Target_Spot": {
+        name_tr: "Domates Hedef Leke",
+        type: "fungal",
+        description: "Domates bitkisinde mantar kaynaklı bir hastalıktır. Yapraklarda hedef tahtası benzeri eşmerkezli lekeler oluşur.",
+        symptoms: "Yapraklarda eşmerkezli halkalı kahverengi lekeler, saplarda koyu lezyonlar, meyvelerde çökük lekeler.",
+        prevention: "Dayanıklı çeşitler seçin. Ürün rotasyonu uygulayın. Sera içi nemi kontrol edin.",
+        treatment: "Mantar ilaçları uygulayın. İlaçlamayı 7-10 gün arayla tekrarlayın.",
+        care: "Hastalıklı yaprakları temizleyin. Havalandırmayı iyileştirin.",
+        chemicals: "Klorotalonil, Mancozeb, Azoxystrobin",
+        urgency: "🟡 Orta — Erken müdahale ile kontrol edilebilir."
+    },
+    "Tomato___Tomato_Yellow_Leaf_Curl_Virus": {
+        name_tr: "Domates Sarı Yaprak Kıvırcıklık Virüsü (TYLCV)",
+        type: "viral",
+        description: "Beyaz sinek (Bemisia tabaci) ile taşınan ciddi bir viral hastalıktır. Genç yapraklarda sararma ve kıvrılmaya neden olur.",
+        symptoms: "Genç yapraklarda sararma, fincan şeklinde yukarı kıvrılma, bodur büyüme, meyve tutumunda azalma.",
+        prevention: "Beyaz sinek mücadelesi yapın. Viral hastalıklara dayanıklı çeşitler seçin. Tül (insekt file) kullanın.",
+        treatment: "Virüsün doğrudan tedavisi yoktur. Beyaz sinekle mücadele ederek yayılımı durdurun. Enfekte bitkileri sökün.",
+        care: "Yeni fideleri böceklerden koruyun. Yansıtıcı malç kullanarak beyaz sinekleri caydırın.",
+        chemicals: "Beyaz sinek mücadelesi için insektisitler (virüsün kendisine değil, taşıyıcıya yönelik)",
+        urgency: "🔴 Çok Yüksek — Tedavisi yoktur, yayılımı önlemek kritik."
+    },
+    "Tomato___Tomato_mosaic_virus": {
+        name_tr: "Domates Mozaik Virüsü (ToMV)",
+        type: "viral",
+        description: "Domates bitkisinde görülen, tohum ve fiziksel temasla bulaşan bir virüs hastalığıdır.",
+        symptoms: "Yapraklarda mozaik desenli açık-koyu yeşil alanlar, meyvelerde renk bozulması ve şekil bozukluğu.",
+        prevention: "Sertifikalı tohum kullanın. Çalışma aletlerini düzenli dezenfekte edin. Dayanıklı çeşitler seçin.",
+        treatment: "Virüsün tedavisi yoktur. Enfekte bitkileri sökün. Temas yoluyla bulaştığı için eldiven kullanın ve sık el yıkayın.",
+        care: "Bitkilere dokunmadan önce ellerinizi sabunla yıkayın. Sigara içenler dikkatli olmalı (tütün mozaik virüsü benzerdir).",
+        chemicals: "Tedavisi yok — koruyucu önlemler tek çözüm.",
+        urgency: "🔴 Yüksek — Tedavisi yoktur, koruyucu önlemler hayati."
+    },
+    "Tomato___healthy": {
+        name_tr: "Domates — Sağlıklı",
+        type: "healthy",
+        description: "Domates yaprağı sağlıklı görünüyor. Herhangi bir hastalık belirtisi tespit edilmedi.",
+        care: "Tuturma (boğaz doldurma), haftada 2-3 kez düzenli sulama, çiçeklenme döneminde potasyum ağırlıklı gübreleme, alt yaprak temizliği ve koltuk alma.",
+        treatment: "Herhangi bir müdahaleye gerek yoktur. Koruyucu bakıma devam edin.",
+        urgency: "🟢 Sağlıklı — Düzenli bakım yeterlidir."
+    }
+};
 
-        canvas.toBlob((blob) => {
-            const file = new File([blob], "camera_snap.jpg", { type: "image/jpeg" });
-            sendImagesToAPI([file]); // Tekli çekimi de dizi olarak yolluyoruz
-        }, 'image/jpeg');
+// ============================================================
+// GEÇMİŞ YÖNETİMİ (localStorage)
+// ============================================================
+
+function saveToHistory(image_id, filename, predictions, filterUsed, isCorrect = null) {
+    let history = JSON.parse(localStorage.getItem('leafai_history') || '[]');
+    const topPred = predictions && predictions.length > 0 ? predictions[0] : null;
+
+    const entry = {
+        id: image_id || Date.now().toString(),
+        date: new Date().toLocaleString('tr-TR'),
+        timestamp: Date.now(),
+        filename: filename || 'kamera',
+        filter: filterUsed || 'All',
+        topLabel: topPred ? topPred.raw_label : 'Bilinmiyor',
+        plantName: topPred ? topPred.plant_name : '—',
+        diseaseName: topPred ? topPred.disease_name : '—',
+        confidence: topPred ? topPred.confidence : 0,
+        isCorrect: isCorrect,
+        predictions: predictions || []
+    };
+
+    history.unshift(entry);
+    if (history.length > 100) history = history.slice(0, 100);
+
+    localStorage.setItem('leafai_history', JSON.stringify(history));
+    updateHistoryCount();
+}
+
+function updateHistoryInFeedback(imageId, isCorrect, finalLabel) {
+    let history = JSON.parse(localStorage.getItem('leafai_history') || '[]');
+    const idx = history.findIndex(h => h.id === imageId);
+    if (idx !== -1) {
+        history[idx].isCorrect = isCorrect;
+        if (!isCorrect && finalLabel) {
+            history[idx].topLabel = finalLabel;
+        }
+        localStorage.setItem('leafai_history', JSON.stringify(history));
+    }
+}
+
+function getHistory() {
+    return JSON.parse(localStorage.getItem('leafai_history') || '[]');
+}
+
+function clearHistory() {
+    if (confirm('Tüm tahmin geçmişini silmek istediğinize emin misiniz?')) {
+        localStorage.removeItem('leafai_history');
+        renderHistory();
+        showToast('Geçmiş temizlendi.');
+    }
+}
+
+function updateHistoryCount() {
+    const count = getHistory().length;
+    const el = document.getElementById('historyCount');
+    if (el) el.textContent = count + ' kayıt';
+}
+
+function renderHistory() {
+    const list = document.getElementById('historyList');
+    const history = getHistory();
+
+    if (history.length === 0) {
+        list.innerHTML = `<div class="history-empty">
+            <div class="history-empty-icon">📭</div>
+            <div class="history-empty-title">Henüz hiç tahmin kaydı yok</div>
+            <div class="history-empty-sub">Yaprak fotoğrafı yükleyip analiz yaptırdığınızda geçmiş kayıtları burada görünecek.</div>
+        </div>`;
+        return;
     }
 
-    // API'ye Çoklu Gönderim Yapan Fonksiyon
-    async function sendImagesToAPI(fileList) {
-        const formData = new FormData();
-        
-        // Seçilen TÜM dosyaları 'files' anahtarına ekliyoruz
-        for (let i = 0; i < fileList.length; i++) {
-            formData.append("files", fileList[i]);
-        }
+    list.innerHTML = history.map(h => {
+        const statusClass = h.isCorrect === true ? 'correct' : (h.isCorrect === false ? 'wrong' : 'pending');
+        const badgeClass = h.isCorrect === true ? 'h-badge-correct' :
+                          h.isCorrect === false ? 'h-badge-wrong' : 'h-badge-pending';
+        const badgeText = h.isCorrect === true ? 'Doğrulandı' :
+                         h.isCorrect === false ? 'Düzeltildi' : 'Bekliyor';
 
-        const selectedFilter = document.getElementById("plantFilter").value;
-        formData.append("plant_filter", selectedFilter);
+        return `<div class="history-item ${statusClass}">
+            <div class="h-date">📅 ${h.date}</div>
+            <div class="h-result">
+                🌱 ${h.plantName} — ${h.diseaseName}
+                <span class="h-badge ${badgeClass}">${badgeText}</span>
+            </div>
+            <div class="h-detail">
+                📄 ${h.filename} &nbsp;·&nbsp; Güven: %${h.confidence}
+                ${h.filter !== 'All' ? `&nbsp;·&nbsp; Filtre: ${h.filter}` : ''}
+            </div>
+            <button class="h-detail-toggle" onclick="toggleHistoryDetail('${h.id}')">🔍 Detay Göster</button>
+            <div class="h-detail-box" id="hdetail-${h.id}">
+                ${h.predictions.slice(0, 3).map(p =>
+                    `<div style="margin-bottom:3px;">🌱 <b>${p.plant_name}</b> — ${p.disease_name}: <b>%${p.confidence}</b></div>`
+                ).join('')}
+                ${h.predictions.length > 3 ? `<div style="color:var(--text-light);">+${h.predictions.length - 3} tahmin daha</div>` : ''}
+            </div>
+        </div>`;
+    }).join('');
 
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('resultCard').style.display = 'none';
+    updateHistoryCount();
+}
 
-        try {
-            const response = await fetch('/predict', { method: 'POST', body: formData });
-            const data = await response.json();
+function toggleHistoryDetail(id) {
+    const el = document.getElementById(`hdetail-${id}`);
+    if (el) el.classList.toggle('show');
+}
 
-            if (data.success) {
-                showBatchResults(data.batch_results);
-            } else {
-                alert("Hata: " + (data.detail || "Tahmin alınamadı"));
-            }
-        } catch (err) {
-            alert("Sunucuyla iletişim kurulamadı: " + err.message);
-        } finally {
-            document.getElementById('loading').style.display = 'none';
-        }
+// ============================================================
+// HASTALIK BAKIM ÖNERİLERİ
+// ============================================================
+
+function getCareInfo(rawLabel) {
+    if (!rawLabel) return null;
+
+    if (CARE_DATABASE[rawLabel]) {
+        return CARE_DATABASE[rawLabel];
     }
 
-    // Toplu Sonuç Kartlarını Çizdirme
-    function showBatchResults(batchResults) {
-        const list = document.getElementById('predictionsList');
-        list.innerHTML = '';
+    const plant = rawLabel.split('___')[0] || '';
+    const disease = rawLabel.split('___')[1] || '';
 
-        batchResults.forEach((item) => {
-            let cardHtml = `<div class="file-result-card" id="card-${item.image_id}">
-                <div class="file-title">📄 Dosya: ${item.filename}</div>`;
+    if (disease && disease.toLowerCase().includes('healthy')) {
+        return {
+            name_tr: plant + ' — Sağlıklı',
+            type: 'healthy',
+            description: 'Yaprak sağlıklı görünüyor.',
+            care: 'Düzenli bakım ve kontrole devam edin.',
+            treatment: 'Herhangi bir müdahaleye gerek yok.',
+            urgency: '🟢 Sağlıklı'
+        };
+    }
 
-            if (item.error) {
-                cardHtml += `<div style="color:red; font-size:13px;">${item.error}</div>`;
-            } else {
-                const topPred = item.predictions[0];
-                
-                item.predictions.forEach((p, idx) => {
-                    cardHtml += `
-                        <div class="res-item" style="${idx === 0 ? 'border-left: 3px solid var(--primary); padding-left: 8px;' : ''}">
-                            <div class="res-header">
-                                <span>🌱 <b>${p.plant_name}</b> - ${p.disease_name}</span>
-                                <span>%${p.confidence}</span>
-                            </div>
-                            <div class="bar-bg">
-                                <div class="bar-fill" style="width: ${p.confidence}%"></div>
-                            </div>
-                            ${p.warning ? `<div style="color:#d32f2f; font-size:11px; margin-top:2px;">${p.warning}</div>` : ''}
-                        </div>
-                    `;
-                });
+    return {
+        name_tr: 'Bilinmeyen / Genel',
+        type: 'unknown',
+        description: 'Bu hastalık için henüz veritabanımızda detaylı bilgi bulunmuyor.',
+        symptoms: 'Bir ziraat mühendisine danışmanız önerilir.',
+        prevention: 'Düzenli bitki bakımı ve gözlem yapın.',
+        treatment: 'Kesin teşhis için bir uzmana danışın.',
+        care: 'Bitkinizi düzenli sulayın ve gübreleyin.',
+        chemicals: 'Uzman önerisi alın.',
+        urgency: '⚠️ Bilgi mevcut değil'
+    };
+}
 
-                // 💡 GERİ BİLDİRİM VE DÜZELTME BUTONLARI EKLENDİ
+function getCareHtml(care) {
+    if (!care) return '';
+
+    let typeTag = '';
+    let typeClass = 'healthy';
+    switch (care.type) {
+        case 'healthy':   typeTag = '<span class="care-tag tag-healthy">✅ Sağlıklı</span>'; typeClass = 'healthy'; break;
+        case 'fungal':    typeTag = '<span class="care-tag tag-fungal">🍄 Mantari</span>'; typeClass = 'fungal'; break;
+        case 'bacterial': typeTag = '<span class="care-tag tag-bacterial">🦠 Bakteriyel</span>'; typeClass = 'bacterial'; break;
+        case 'viral':     typeTag = '<span class="care-tag tag-viral">🧬 Viral</span>'; typeClass = 'viral'; break;
+        case 'pest':      typeTag = '<span class="care-tag tag-pest">🐛 Zararlı</span>'; typeClass = 'pest'; break;
+        default:          typeTag = '<span class="care-tag tag-note">ℹ️ Genel</span>'; typeClass = 'unknown';
+    }
+
+    return `
+        <div class="care-card ${typeClass}">
+            <div class="care-header">
+                ${typeTag}
+                <h4>${care.name_tr}</h4>
+            </div>
+            <div class="care-body">
+                ${care.description  ? `<div class="care-item"><strong>📋 Açıklama:</strong> ${care.description}</div>` : ''}
+                ${care.symptoms     ? `<div class="care-item"><strong>🔍 Belirtiler:</strong> ${care.symptoms}</div>` : ''}
+                ${care.prevention   ? `<div class="care-item"><strong>🛡️ Önleme:</strong> ${care.prevention}</div>` : ''}
+                <div class="care-item"><strong>💊 Tedavi:</strong> ${care.treatment || 'Bilgi bulunamadı.'}</div>
+                ${care.care         ? `<div class="care-item"><strong>🌿 Bakım:</strong> ${care.care}</div>` : ''}
+                ${care.chemicals    ? `<div class="care-item"><span class="care-tag tag-chemical">🧪 Kimyasal</span> ${care.chemicals}</div>` : ''}
+                <div class="care-item"><strong>⚠️ Durum:</strong> ${care.urgency || 'Bilgi bulunamadı.'}</div>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================
+// ANA FONKSİYONLAR (GÜNCELLENMİŞ)
+// ============================================================
+
+let currentStream = null;
+
+function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.content-box').forEach(c => c.classList.remove('active'));
+
+    btn.classList.add('active');
+    document.getElementById(tab + 'Box').classList.add('active');
+
+    if (tab === 'camera') startCamera();
+    else stopCamera();
+
+    if (tab === 'history') renderHistory();
+}
+
+async function startCamera() {
+    try {
+        currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        document.getElementById('webcam').srcObject = currentStream;
+    } catch (err) {
+        showToast('Kameraya erişilemedi: ' + err.message, 'error');
+    }
+}
+
+function stopCamera() {
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+    }
+}
+
+function handleFileSelect(e) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    sendImagesToAPI(files);
+}
+
+function captureAndPredict() {
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+
+    canvas.toBlob((blob) => {
+        const file = new File([blob], "camera_snap.jpg", { type: "image/jpeg" });
+        sendImagesToAPI([file]);
+    }, 'image/jpeg');
+}
+
+async function sendImagesToAPI(fileList) {
+    const formData = new FormData();
+
+    for (let i = 0; i < fileList.length; i++) {
+        formData.append("files", fileList[i]);
+    }
+
+    const selectedFilter = document.getElementById("plantFilter").value;
+    formData.append("plant_filter", selectedFilter);
+
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('resultCard').style.display = 'none';
+
+    try {
+        const response = await fetch('/predict', { method: 'POST', body: formData });
+        const data = await response.json();
+
+        if (data.success) {
+            showBatchResults(data.batch_results, selectedFilter);
+        } else {
+            showToast('Hata: ' + (data.detail || "Tahmin alınamadı"), 'error');
+        }
+    } catch (err) {
+        showToast('Sunucuyla iletişim kurulamadı: ' + err.message, 'error');
+    } finally {
+        document.getElementById('loading').style.display = 'none';
+    }
+}
+
+function showBatchResults(batchResults, filterUsed) {
+    const list = document.getElementById('predictionsList');
+    list.innerHTML = '';
+
+    batchResults.forEach((item) => {
+        const topPred = item.predictions && item.predictions.length > 0 ? item.predictions[0] : null;
+        const care = topPred ? getCareInfo(topPred.raw_label) : null;
+
+        saveToHistory(item.image_id, item.filename, item.predictions, filterUsed, null);
+
+        let cardHtml = `<div class="file-result-card" id="card-${item.image_id}">
+            <div class="file-title-bar">
+                <div class="file-title-icon">🌱</div>
+                <div class="file-title-text">${item.filename}</div>
+            </div>`;
+
+        if (item.error) {
+            cardHtml += `<div style="color:var(--danger); font-size:13px; padding:8px; background:var(--danger-light); border-radius:8px;">❌ ${item.error}</div>`;
+        } else {
+            item.predictions.forEach((p, idx) => {
+                const isTop = idx === 0;
+                const conf = p.confidence;
+                const pctClass = conf >= 75 ? 'high' : (conf >= 50 ? 'med' : 'low');
+                const barClass = conf >= 75 ? '' : (conf >= 50 ? 'med' : 'low');
+
                 cardHtml += `
-                    <div style="margin-top:12px; padding-top:8px; border-top:1px dashed #ccc; font-size:12px;">
-                        <span>Bu tahmin doğru mu?</span>
-                        <button onclick="submitFeedback('${item.image_id}', true, '${topPred.raw_label}', '${topPred.raw_label}')" style="background:#2e7d32; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-left:5px;">✅ Evet</button>
-                        <button onclick="toggleCorrection('${item.image_id}')" style="background:#e53935; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-left:5px;">✏️ Düzelt</button>
+                    <div class="res-item ${isTop ? 'top-result' : ''}">
+                        <div class="res-header">
+                            <span class="res-label">🌱 <b>${p.plant_name}</b> — ${p.disease_name}</span>
+                            <span class="res-pct ${pctClass}">%${conf}</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill ${barClass}" style="width: ${conf}%"></div>
+                        </div>
+                        ${p.warning ? `<span class="warning-badge">⚠️ ${p.warning}</span>` : ''}
                     </div>
+                `;
+            });
 
-                    <!-- Düzeltme Kutusu (Başlangıçta Gizli) -->
-                    <div id="corr-box-${item.image_id}" style="display:none; margin-top:10px; background:#fff3e0; padding:10px; border-radius:6px;">
-                        <label style="font-weight:bold; font-size:11px;">Doğru Bitkiyi/Hastalığı Seçin:</label>
-                        <select id="corr-select-${item.image_id}" style="width:100%; padding:6px; margin:5px 0; font-size:12px;">
-                            <option value="${topPred.raw_label}">${topPred.plant_name} - ${topPred.disease_name}</option>
+            // Bakım önerisi
+            if (care) cardHtml += getCareHtml(care);
+
+            // Geri bildirim
+            const rawLabel = topPred ? topPred.raw_label : '';
+            const displayName = topPred ? topPred.plant_name + ' - ' + topPred.disease_name : '';
+            cardHtml += `
+                <div class="feedback-area">
+                    <span class="feedback-label">Bu tahmin doğru mu?</span>
+                    <div class="feedback-btns">
+                        <button class="fb-btn fb-btn-correct" onclick="submitFeedback('${item.image_id}', true, '${rawLabel}', '${rawLabel}')">✅ Evet, doğru</button>
+                        <button class="fb-btn fb-btn-edit" onclick="toggleCorrection('${item.image_id}')">✏️ Düzelt</button>
+                    </div>
+                    <div class="correction-box" id="corr-box-${item.image_id}">
+                        <label>Doğru bitkiyi ve hastalığı seçin:</label>
+                        <select id="corr-select-${item.image_id}">
+                            <option value="${rawLabel}">${displayName}</option>
                             <option value="Tomato___Early_blight">Domates - Erken Yanıklık</option>
                             <option value="Tomato___Late_blight">Domates - Geç Yanıklık</option>
                             <option value="Potato___Early_blight">Patates - Erken Yanıklık</option>
                             <option value="Potato___Late_blight">Patates - Geç Yanıklık</option>
-                            <option value="Apple___Apple_scab">Elma - Lekesi</option>
+                            <option value="Apple___Apple_scab">Elma - Kara Lekesi</option>
                             <option value="Apple___healthy">Elma - Sağlıklı</option>
                             <option value="Tomato___healthy">Domates - Sağlıklı</option>
                         </select>
-                        <button onclick="submitCorrection('${item.image_id}', '${topPred.raw_label}')" style="width:100%; background:#1b5e20; color:white; border:none; padding:6px; border-radius:4px; cursor:pointer; font-weight:bold;">Doğrusunu Kaydet</button>
+                        <button class="save-btn" onclick="submitCorrection('${item.image_id}', '${rawLabel}')">Doğrusunu Kaydet</button>
                     </div>
-                `;
-            }
-
-            cardHtml += `</div>`;
-            list.innerHTML += cardHtml;
-        });
-
-        document.getElementById('resultCard').style.display = 'block';
-    }
-
-    function toggleCorrection(imageId) {
-        const box = document.getElementById(`corr-box-${imageId}`);
-        box.style.display = box.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function submitCorrection(imageId, predictedRaw) {
-        const selectedCorrectRaw = document.getElementById(`corr-select-${imageId}`).value;
-        submitFeedback(imageId, false, predictedRaw, selectedCorrectRaw);
-    }
-
-    async function submitFeedback(imageId, isCorrect, predictedRaw, correctRaw) {
-        const formData = new FormData();
-        formData.append("image_id", imageId);
-        formData.append("is_correct", isCorrect);
-        formData.append("predicted_raw", predictedRaw);
-        formData.append("correct_raw", correctRaw);
-
-        try {
-            const response = await fetch('/feedback', { method: 'POST', body: formData });
-            const data = await response.json();
-
-            if (data.success) {
-                const card = document.getElementById(`card-${imageId}`);
-                card.style.background = isCorrect ? '#e8f5e9' : '#ffebee';
-                card.innerHTML += `<div style="color:${isCorrect ? '#2e7d32' : '#c62828'}; font-weight:bold; font-size:12px; margin-top:8px;">✅ ${data.message}</div>`;
-            }
-        } catch (err) {
-            alert("Geri bildirim kaydedilemedi: " + err.message);
+                </div>
+            `;
         }
+
+        cardHtml += `</div>`;
+        list.innerHTML += cardHtml;
+    });
+
+    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function toggleCorrection(imageId) {
+    const box = document.getElementById(`corr-box-${imageId}`);
+    box.classList.toggle('show');
+}
+
+function submitCorrection(imageId, predictedRaw) {
+    const selectedCorrectRaw = document.getElementById(`corr-select-${imageId}`).value;
+    submitFeedback(imageId, false, predictedRaw, selectedCorrectRaw);
+}
+
+async function submitFeedback(imageId, isCorrect, predictedRaw, correctRaw) {
+    const formData = new FormData();
+    formData.append("image_id", imageId);
+    formData.append("is_correct", isCorrect);
+    formData.append("predicted_raw", predictedRaw);
+    formData.append("correct_raw", correctRaw);
+
+    try {
+        const response = await fetch('/feedback', { method: 'POST', body: formData });
+        const data = await response.json();
+
+        if (data.success) {
+            const card = document.getElementById(`card-${imageId}`);
+            if (card) {
+                card.style.background = isCorrect ? 'linear-gradient(135deg, #fff3e0, #ffffff)' : 'linear-gradient(135deg, #ffebee, #ffffff)';
+                const msg = document.createElement('div');
+                msg.className = `feedback-msg ${isCorrect ? 'success' : 'info'}`;
+                msg.textContent = '✅ ' + data.message;
+                card.appendChild(msg);
+            }
+            updateHistoryInFeedback(imageId, isCorrect, isCorrect ? null : correctRaw);
+            showToast(isCorrect ? 'Geri bildiriminiz kaydedildi. Teşekkürler!' : 'Düzeltmeniz kaydedildi. Teşekkürler!');
+        }
+    } catch (err) {
+        showToast('Geri bildirim kaydedilemedi: ' + err.message, 'error');
     }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateHistoryCount();
+});
 </script>
 </body>
 </html>
