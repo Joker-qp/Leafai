@@ -77,10 +77,20 @@ st.sidebar.markdown("---")
 st.markdown('<div class="main-header">🫒 Zeytin Bilge-Sis</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Halkalı Leke ve Pas Akarı için Çok Modlu, Fenolojik Emniyet Kilitli Karar Destek Sistemi</div>', unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader(
-    "📸 İncelemek istediğiniz zeytin yaprağının fotoğrafını yükleyin (Beyaz Zemin Önerilir):", 
-    type=["jpg", "jpeg", "png", "heic", "HEIC", "JPG", "JPEG", "PNG", "webp"]
-)
+tab1, tab2 = st.tabs(["📁 Galeriden Yükle", "📷 Kameradan Çek"])
+
+with tab1:
+    dosya_galeri = st.file_uploader(
+        "Fotoğraf Seçiniz:", 
+        type=["jpg", "jpeg", "png", "heic", "HEIC", "JPG", "JPEG", "PNG", "webp"],
+        key="galeri"
+    )
+
+with tab2:
+    dosya_kamera = st.camera_input("Yaprağın Fotoğrafını Çekiniz:", key="kamera")
+
+# İki seçenekten hangisi geldiyse onu işleme alıyoruz:
+uploaded_file = dosya_galeri if dosya_galeri is not None else dosya_kamera
 if uploaded_file is not None:
     # 1. Fotoğrafı renk kaybı olmadan geçici olarak diske yazıyoruz (Colab ile %100 aynı ortam!)
     import tempfile
