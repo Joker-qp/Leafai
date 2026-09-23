@@ -14,7 +14,7 @@ from core.decision_fusion import zirai_karar_ver
 # 1. SAYFA YAPILANDIRMASI VE TASARIM
 # ==========================================
 st.set_page_config(
-    page_title="Zeytin Bilge-Sis | Karar Destek Sistemi",
+    page_title="Zeytin | Karar Destek Sistemi",
     page_icon="🫒",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -77,8 +77,10 @@ st.sidebar.markdown("---")
 st.markdown('<div class="main-header">🫒 Zeytin Bilge-Sis</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Halkalı Leke ve Pas Akarı için Çok Modlu, Fenolojik Emniyet Kilitli Karar Destek Sistemi</div>', unsafe_allow_html=True)
 
-uploaded_file = st.file_uploader("📸 İncelemek istediğiniz zeytin yaprağının fotoğrafını yükleyin (Beyaz Zemin Önerilir):", type=["jpg", "jpeg", "png"])
-
+uploaded_file = st.file_uploader(
+    "📸 İncelemek istediğiniz zeytin yaprağının fotoğrafını yükleyin (Beyaz Zemin Önerilir):", 
+    type=["jpg", "jpeg", "png", "heic", "HEIC", "JPG", "JPEG", "PNG", "webp"]
+)
 if uploaded_file is not None:
     # 1. Fotoğrafı renk kaybı olmadan geçici olarak diske yazıyoruz (Colab ile %100 aynı ortam!)
     import tempfile
