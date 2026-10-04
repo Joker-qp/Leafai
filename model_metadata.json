@@ -1,0 +1,40 @@
+{
+    "project": "Gemlik Zeytin Hastaliklari Yapay Zeka Teshis Motoru",
+    "models": {
+        "segmentation": {
+            "file": "yolov8_zeytin_seg.onnx",
+            "input_size": [
+                640,
+                640
+            ],
+            "classes": {
+                "0": "leaf",
+                "1": "lession"
+            }
+        },
+        "classification": {
+            "file": "efficientnet_classifier.onnx",
+            "input_size": [
+                224,
+                224
+            ],
+            "classes": [
+                "Healthy",
+                "acerculus_olearius",
+                "olive_peacock_spot"
+            ],
+            "preprocessing": {
+                "mean": [
+                    0.485,
+                    0.456,
+                    0.406
+                ],
+                "std": [
+                    0.229,
+                    0.224,
+                    0.225
+                ]
+            }
+        }
+    }
+}
