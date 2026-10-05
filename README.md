@@ -39,22 +39,32 @@ flowchart TD
     D --> J[Zirai Mücadele ve İlaçlama Reçetesi]
     H --> J
     I --> J
+```
 
-📊 Model Başarım Metrikleri
-1. Model: YOLOv8s-seg (Segmentasyon)
-Hedef Sınıf	Örnek Sayısı	Mask Precision	Mask Recall	Mask mAP50	Mask mAP50-95
-leaf (Yaprak)	112	0.962	1.000	0.994	0.969
-lession (Leke)	60	0.910	0.767	0.816	0.516
-Tüm Sınıflar (Ort.)	172	0.936	0.879	0.905	0.742
-2. Model: EfficientNet-B0 (Sınıflandırma - Weighted Loss)
-Sınıf Adı	Precision	Recall (Duyarlılık)	F1-Score	Doğrulama Desteği (Support)
-Healthy (Sağlıklı)	0.988	0.992	0.990	259
-acerculus_olearius (Pas Akarı)	0.980	1.000	0.990	100
-olive_peacock_spot (Halkalı Leke)	0.994	0.985	0.989	332
-Genel Doğruluk (Accuracy)	-	-	%98.99	691
-📁 Proje Dosya Yapısı
-code Text
+---
 
+## 📊 Model Başarım Metrikleri
+
+### 1. Model: YOLOv8s-seg (Segmentasyon)
+| Hedef Sınıf | Örnek Sayısı | Mask Precision | Mask Recall | Mask mAP50 | Mask mAP50-95 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **leaf (Yaprak)** | 112 | 0.962 | 1.000 | **0.994** | 0.969 |
+| **lession (Leke)** | 60 | 0.910 | 0.767 | **0.816** | 0.516 |
+| **Tüm Sınıflar (Ort.)** | 172 | 0.936 | 0.879 | **0.905** | 0.742 |
+
+### 2. Model: EfficientNet-B0 (Sınıflandırma - Weighted Loss)
+| Sınıf Adı | Precision | Recall (Duyarlılık) | F1-Score | Doğrulama Desteği (Support) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Healthy (Sağlıklı)** | 0.988 | 0.992 | 0.990 | 259 |
+| **acerculus_olearius (Pas Akarı)** | 0.980 | **1.000** | 0.990 | 100 |
+| **olive_peacock_spot (Halkalı Leke)** | 0.994 | 0.985 | 0.989 | 332 |
+| **Genel Doğruluk (Accuracy)** | - | - | **%98.99** | **691** |
+
+---
+
+## 📁 Proje Dosya Yapısı
+
+```text
 ├── models/
 │   ├── yolov8_zeytin_seg.onnx       # Piksel hassasiyetinde segmentasyon modeli (45.2 MB)
 │   ├── efficientnet_classifier.onnx # Morfolojik sınıflandırma modeli (15.9 MB)
@@ -62,39 +72,38 @@ code Text
 ├── app.py                           # Streamlit arayüz ve uçtan uca çıkarım kodu
 ├── requirements.txt                 # Minimum ve hafif bağımlılık listesi
 └── README.md                        # Proje dokümantasyonu
+```
 
-💻 Yerel Kurulum ve Çalıştırma
+---
 
-    Depoyu klonlayın:
-    code Bash
+## 💻 Yerel Kurulum ve Çalıştırma
 
-    git clone https://github.com/Joker-qp/Leafai.git
-    cd Leafai
+1. Depoyu klonlayın:
+   ```bash
+   git clone https://github.com/Joker-qp/Leafai.git
+   cd Leafai
+   ```
 
-    Gerekli kütüphaneleri yükleyin:
-    code Bash
+2. Gerekli kütüphaneleri yükleyin:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-    pip install -r requirements.txt
+3. Web arayüzünü başlatın:
+   ```bash
+   streamlit run app.py
+   ```
 
-    Web arayüzünü başlatın:
-    code Bash
+---
 
-    streamlit run app.py
+## 🔮 Gelecek Planları (Roadmap)
 
-🔮 Gelecek Planları (Roadmap)
-
-    YOLOv8-seg lezyon ve yaprak segmentasyon motoru.
-
-    Arka plan yalıtımlı EfficientNet-B0 sınıflandırıcısı.
-
-    ONNX formatında hafifletilmiş çıkarım motoru.
-
-    Streamlit web ve mobil kamera arayüzü.
-
-    LLM Destekli Zirai Chatbot: Çiftçinin anlık sorularını yanıtlayan RAG destekli akıllı asistan entegrasyonu.
-
-    Saha testleri ve kenar cihaz (Raspberry Pi / Jetson) entegrasyonu.
-
-code Code
+- [x] YOLOv8-seg lezyon ve yaprak segmentasyon motoru.
+- [x] Arka plan yalıtımlı EfficientNet-B0 sınıflandırıcısı.
+- [x] ONNX formatında hafifletilmiş çıkarım motoru.
+- [x] Streamlit web ve mobil kamera arayüzü.
+- [ ] **LLM Destekli Zirai Chatbot:** Çiftçinin anlık sorularını yanıtlayan RAG destekli akıllı asistan entegrasyonu.
+- [ ] Saha testleri ve kenar cihaz (Raspberry Pi / Jetson) entegrasyonu.
+```
 
 Bu adımları tamamladığında depon hem kurumsal bir yapay zekâ araştırma projesi ciddiyetine kavuşacak hem de bir sonraki aşama olan "Chatbot / Genişletilmiş Proje" için zemin tertemiz hazır olacaktır!
