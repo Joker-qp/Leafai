@@ -23,7 +23,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="main-title">🫒 Gemlik Zeytini Hastalık Teşhis Motoru</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Yüksek Performanslı ONNX Runtime ile Yaprak Segmentasyonu ve Zirai Reçete Platformu</div>', unsafe_allow_html=True)
 
 # ONNX Modellerini Önbelleğe Al
 @st.cache_resource
@@ -47,22 +46,6 @@ try:
 except Exception as e:
     st.error(f"ONNX Modelleri yüklenirken hata oluştu: {e}")
     models_ready = False
-
-with st.sidebar:
-    st.image("https://images.unsplash.com/photo-1541256942802-7b2996a84f97?w=500", use_container_width=True)
-    st.header("⚡ ONNX Motoru Aktif")
-    st.info("""
-    Bu sistem **ONNX (Open Neural Network Exchange)** formatında optimize edilmiştir.
-    
-    * **Model 1:** YOLOv8s-seg ONNX (Leke ve Yaprak Segmentasyonu)
-    * **Model 2:** EfficientNet-B0 ONNX (Derin Morfolojik Sınıflandırma)
-    * **Hız:** Düşük gecikmeli CPU çıkarımı.
-    """)
-    st.write("---")
-    st.caption("Gemlik Zeytin Hastalıkları Yapay Zeka Laboratuvarı")
-
-st.subheader("📸 Yaprak Fotoğrafı Sağlayın")
-input_method = st.radio("Fotoğraf Giriş Yöntemi:", ["Fotoğraf Yükle (Galeri/Bilgisayar)", "Kamerayı Aç (Anlık Çekim)"], horizontal=True)
 
 uploaded_file = None
 if input_method == "Fotoğraf Yükle (Galeri/Bilgisayar)":
