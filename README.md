@@ -93,17 +93,3 @@ flowchart TD
    ```bash
    streamlit run app.py
    ```
-
----
-
-## 🔮 Gelecek Planları (Roadmap)
-
-- [x] YOLOv8-seg lezyon ve yaprak segmentasyon motoru.
-- [x] Arka plan yalıtımlı EfficientNet-B0 sınıflandırıcısı.
-- [x] ONNX formatında hafifletilmiş çıkarım motoru.
-- [x] Streamlit web ve mobil kamera arayüzü.
-- [ ] **LLM Destekli Zirai Chatbot:** Çiftçinin anlık sorularını yanıtlayan RAG destekli akıllı asistan entegrasyonu.
-- [ ] Saha testleri ve kenar cihaz (Raspberry Pi / Jetson) entegrasyonu.
-```
-
-Bu adımları tamamladığında depon hem kurumsal bir yapay zekâ araştırma projesi ciddiyetine kavuşacak hem de bir sonraki aşama olan "Chatbot / Genişletilmiş Proje" için zemin tertemiz hazır olacaktır!
