@@ -58,11 +58,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.markdown(
-    '<div class="main-title">🫒 Gemlik Zeytini Hastalık Teşhis Motoru</div>',
-    unsafe_allow_html=True,
-)
-
 # ---------------------------------------------------------
 # Modellerin Önbelleğe Alınarak Yüklenmesi (Hızlı Başlatma)
 # ---------------------------------------------------------
