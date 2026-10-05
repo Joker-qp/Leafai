@@ -64,13 +64,13 @@ st.markdown(
 @st.cache_resource
 def load_onnx_models():
   # 1. Segmentasyon Modeli (YOLOv8-Seg ONNX)
-  seg_path = "yolov8_zeytin_seg.onnx"
+  seg_path = "models/yolov8_zeytin_seg.onnx"
   if not os.path.exists(seg_path):
     raise FileNotFoundError(f"{seg_path} dosyası bulunamadı!")
   seg_model = YOLO(seg_path, task="segment")
 
   # 2. Sınıflandırma Modeli (EfficientNet-B0 ONNX)
-  cls_path = "efficientnet_classifier.onnx"
+  cls_path = "models/efficientnet_classifier.onnx"
   if not os.path.exists(cls_path):
     raise FileNotFoundError(f"{cls_path} dosyası bulunamadı!")
   cls_session = ort.InferenceSession(
@@ -78,7 +78,7 @@ def load_onnx_models():
   )
 
   # 3. Model Künyesi (Metadata)
-  meta_path = "model_metadata.json"
+meta_path = "models/model_metadata.json"
   if os.path.exists(meta_path):
     with open(meta_path, "r", encoding="utf-8") as f:
       meta = json.load(f)
