@@ -112,9 +112,6 @@ with st.sidebar:
     * **Halkalı Leke (*Spilocaea oleagina*):** Yaprak yüzeyinde karakteristik dairesel lekeler ve sarı halkalar.
     * **Zeytin Pas Akarı (*Aceria oleae / Aculus olearius*):** Yaprak dokusunda bükülme, asimetrik kıvrılma ve gümüşi paslanma.
     """)
-  st.write("---")
-  st.markdown("**Çalışma Motoru:** ONNX Runtime (CPU Optimized)")
-  st.caption("Gemlik Zeytin Hastalıkları AI Laboratuvarı")
 
 # ---------------------------------------------------------
 # Görsel Giriş Alanı (Dosya Yükleme veya Kamera)
