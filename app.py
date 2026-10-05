@@ -11,7 +11,7 @@ from ultralytics import YOLO
 # Sayfa Yapılandırması ve Özel Tema Stilleri
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="Gemlik Zeytin Hastalık Teşhis Sistemi (ONNX)",
+    page_title="Gemlik Zeytin Hastalık Teşhis Sistemi",
     page_icon="🫒",
     layout="wide",
 )
@@ -62,12 +62,6 @@ st.markdown(
     '<div class="main-title">🫒 Gemlik Zeytini Hastalık Teşhis Motoru</div>',
     unsafe_allow_html=True,
 )
-st.markdown(
-    '<div class="sub-title">Yüksek Performanslı ONNX Runtime ile Yaprak'
-    ' Segmentasyonu, Teşhis ve Zirai Reçete Platformu</div>',
-    unsafe_allow_html=True,
-)
-
 
 # ---------------------------------------------------------
 # Modellerin Önbelleğe Alınarak Yüklenmesi (Hızlı Başlatma)
@@ -118,7 +112,7 @@ with st.sidebar:
   )
   st.header("⚡ Sistem Mimarisi")
   st.info("""
-    Bu sistem **Gemlik Tipi Zeytin Ağaçlarında** en sık karşılaşılan iki kritik patolojik durumu tespit eder:
+    Bu sistem ** Zeytin Yapraklarında** en sık karşılaşılan iki kritik patolojik durumu tespit eder:
     
     * **Halkalı Leke (*Spilocaea oleagina*):** Yaprak yüzeyinde karakteristik dairesel lekeler ve sarı halkalar.
     * **Zeytin Pas Akarı (*Aceria oleae / Aculus olearius*):** Yaprak dokusunda bükülme, asimetrik kıvrılma ve gümüşi paslanma.
@@ -251,13 +245,6 @@ if uploaded_file is not None and models_ready:
             <h3>🔴 TEŞHİS: Halkalı Leke Hastalığı (Spilocaea oleagina)</h3>
             <p><b>Model Güven Oranı:</b> %96.8</p>
             <p><b>Hastalık Şiddeti (Leke Alanı / Yaprak Alanı):</b> %{severity_pct:.2f}</p>
-            <hr>
-            <h4>🌾 Zirai Mücadele ve Tedavi Reçetesi:</h4>
-            <ul>
-                <li>İlkbahar ve sonbahar sürgün dönemlerinde yağışlardan hemen önce <b>%1 - 1.5'lik Bordo Bulamacı</b> uygulayınız.</li>
-                <li>Hastalığın şiddetli seyrettiği bahçelerde hasat sonrasında bakır hidroksit veya bakır oksiklorür preparatları tercih edilmelidir.</li>
-                <li>Ağaç tacının hava alması ve nemin düşürülmesi amacıyla budamaya özen gösteriniz.</li>
-            </ul>
         </div>
         """,
         unsafe_allow_html=True,
@@ -271,13 +258,6 @@ if uploaded_file is not None and models_ready:
             <h3>🟠 TEŞHİS: Zeytin Pas Akarı Zararı (Aceria oleae / Aculus olearius)</h3>
             <p><b>Model Güven Oranı:</b> %{conf_val*100:.2f}</p>
             <p><b>Tespit Edilen Belirtiler:</b> Yaprak yüzeyinde asimetrik kıvrılma, bükülme ve gümüşi/bronz renk değişimi saptandı.</p>
-            <hr>
-            <h4>🌾 Zirai Mücadele ve Tedavi Reçetesi:</h4>
-            <ul>
-                <li>İlkbahar aylarında sürgün gelişim döneminde ağaç başına akar popülasyonu arttığında ilaçlama planlanmalıdır.</li>
-                <li>Islanabilir <b>Kükürt (WP)</b> formülasyonları akar popülasyonunu baskılamakta oldukça başarılıdır.</li>
-                <li>Zararın yüksek olduğu durumlarda ruhsatlı spesifik akarisit mücadelesi uygulayınız.</li>
-            </ul>
         </div>
         """,
         unsafe_allow_html=True,
@@ -291,9 +271,6 @@ if uploaded_file is not None and models_ready:
             <h3>🟢 TEŞHİS: Sağlıklı Zeytin Yaprağı</h3>
             <p><b>Model Güven Oranı:</b> %{conf_val*100:.2f}</p>
             <p><b>Yaprak Durumu:</b> Yüzeyde herhangi bir fungal lezyon veya akar kaynaklı morfolojik bozukluk tespit edilmedi.</p>
-            <hr>
-            <h4>🌾 Bakım Tavsiyesi:</h4>
-            <p>Ağacınız sağlıklı gelişimini sürdürmektedir. Rutin sulama, dengeli gübreleme ve periyodik yaprak gözlemlerine devam ediniz.</p>
         </div>
         """,
         unsafe_allow_html=True,
