@@ -36,8 +36,33 @@
 }
 
 /* ==========================================================================
-   2. Cam Panel ve Modal Katmanları
+   2. Cam Panel, Modal ve Katman İzolasyonları
    ========================================================================== */
+/* Modallar: kapalıyken mutlak gizlilik, ekranı kaplayan overlay kilitlenmesini kesin önler */
+.modal-backdrop.hidden,
+#modal-settings.hidden,
+#modal-admin-auth.hidden,
+#modal-admin-dashboard.hidden {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+.modal-backdrop:not(.hidden) {
+  display: flex !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+
+/* SPA Sekme İçerikleri: kapalı sekmeler kesin gizlenir, aktif sekme görünür */
+.tab-content.hidden {
+  display: none !important;
+}
+
+.tab-content:not(.hidden) {
+  display: block;
+}
+
 .glass-panel {
   background: var(--surface-glass-bg);
   backdrop-filter: blur(14px);
@@ -100,16 +125,69 @@
 }
 
 /* ==========================================================================
-   4. Çift Kademeli ONNX Çıkarım HUD ve Lazer Tarama Animasyonları
+   4. Çift Kademeli ONNX Çıkarım HUD, Lazer Tarama ve Scanline Animasyonları
    ========================================================================== */
 /**
  * Dokümantasyon Madde 4.7: YOLOv8s-seg için yukarıdan aşağıya sarı lazer taraması.
  * GPU Compositor optimizasyonu: Layout reflow tetikleyen 'top' yerine
  * sıfır boyama maliyeti sunan 'transform: translateY' tekniği kullanılmıştır.
  */
-.hud-scanner-container {
+.hud-scanner-container,
+.scanline-container {
   position: relative;
   overflow: hidden;
+}
+
+/* Sarı Lazer Tarama (Scanline) Efekti - Video Senkronizasyonu */
+.scanline-laser {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #facc15;
+  box-shadow:
+    0 0 14px 3px #facc15,
+    0 0 28px 6px rgba(250, 204, 21, 0.6);
+  pointer-events: none;
+  z-index: 25;
+  opacity: 0;
+}
+
+.scanline-laser::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 3px;
+  height: 32px;
+  background: linear-gradient(
+    to top,
+    rgba(250, 204, 21, 0.3) 0%,
+    rgba(250, 204, 21, 0) 100%
+  );
+  pointer-events: none;
+}
+
+.scanline-active .scanline-laser {
+  animation: scanline 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes scanline {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
 }
 
 /* Donanım Hızlandırmalı Lazer Taşıyıcı ve Işık Çizgisi */
@@ -172,14 +250,29 @@
   }
 }
 
-/* Çıkarım Tuvali (Canvas) Net Piksel Oluşturma (Tüm 4 Kademe Dahil) */
+/* Kademeli Aşamalı Geçiş (Staggered Step Reveal) */
+.pipeline-step-card {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.pipeline-step-card.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Çıkarım Tuvali (Canvas) Net Piksel Oluşturma (Letterbox Gri Bloklarından Arındırılmış) */
 canvas.segmentation-canvas,
 #canvas-step1,
 #canvas-step2,
 #canvas-step3,
 #canvas-step4 {
+  image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
-  image-rendering: pixelated;
   display: block;
   max-width: 100%;
   height: auto;

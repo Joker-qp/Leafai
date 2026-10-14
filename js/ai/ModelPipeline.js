@@ -8,10 +8,18 @@
 
 import { AppConfig, AI_CLASSES, GEMLIK_SPECS } from "../config/AppConfig.js";
 
-// ONNX Runtime Wasm Çoklu Çekirdek Donanım Hızlandırması
+// ONNX Runtime Wasm Donanım Yapılandırması ve Güvenlik Optimizasyonu
 if (typeof ort !== "undefined") {
   try {
-    ort.env.wasm.numThreads = Math.min(4, navigator.hardwareConcurrency || 4);
+    // Wasm binary yollarını CDN dağıtımına açıkça sabitle
+    ort.env.wasm.wasmPaths =
+      "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/";
+    const isCrossOriginIsolated =
+      typeof crossOriginIsolated !== "undefined" && crossOriginIsolated;
+    // Cross-origin isolation yoksa SharedArrayBuffer güvenlik hatasını önlemek için 1 thread kullan
+    ort.env.wasm.numThreads = isCrossOriginIsolated
+      ? Math.min(4, navigator.hardwareConcurrency || 4)
+      : 1;
     ort.env.wasm.simd = true;
   } catch (e) {
     console.warn("[ModelPipeline] Wasm donanım optimizasyonu uyarısı:", e);
@@ -151,6 +159,7 @@ class ModelPipelineOrchestrator {
   /**
    * Ana Çıkarım Boru Hattı (Pipeline)
    * Dokümantasyon Madde 4.7 & Madde 1 Standartlarına Tam Uyumlu 4 Kademe
+   * (Letterbox gri dolguları unpad/crop ile temizlendi, aşamalı geçiş ve scanline animasyonu eklendi)
    */
   async processLeafImage(imageSource) {
     if (!this.#isYoloReady || !this.#isClassifierReady) {
@@ -162,6 +171,13 @@ class ModelPipelineOrchestrator {
       clearInterval(this.#confidenceIntervalId);
       this.#confidenceIntervalId = null;
     }
+
+    // Aşamalı geçiş için kartların görünürlük durumunu sıfırla
+    ["card-step1", "card-step2", "card-step3", "diagnosis-card"].forEach(
+      (id) => {
+        document.getElementById(id)?.classList.remove("is-visible");
+      },
+    );
 
     const container = document.getElementById("pipeline-results");
     if (container) {
@@ -181,43 +197,66 @@ class ModelPipelineOrchestrator {
       600;
 
     // =========================================================================
-    // ADIM 1: Görüntü Alındı & Letterbox (Aspect-Ratio Koruma & RGB 114 Dolgu)
+    // ADIM 1: Görüntü Alındı & Letterbox Ön İşleme (Tensör 640x640 Hazırlığı)
     // =========================================================================
     this.#updateStepHeader(
-      "ADIM 1: Görüntü Alındı & Letterbox",
-      `Pikseller 640x640 tensör boyutuna ölçekleniyor (${origW}x${origH} -> 640x640)...`,
+      "ADIM 1: Görüntü Alındı & Yaprak Odaklama",
+      `Görüntü unpad/crop ile odaklandı (${origW}x${origH}), YOLOv8s-seg tensörü hazırlanıyor...`,
     );
 
-    const c1 = document.getElementById("canvas-step1");
-    if (!c1) throw new Error("#canvas-step1 elementi DOM'da bulunamadı.");
-    c1.width = MODEL_CONSTANTS.yoloSize;
-    c1.height = MODEL_CONSTANTS.yoloSize;
-    const ctx1 = c1.getContext("2d", { willReadFrequently: true });
-
+    // YOLOv8s-seg girdi olarak 640x640 letterbox kare tensör gerektirir.
+    // UI kirliliğini önlemek için tensör tuvali arka planda offscreen hazırlanır.
+    const offscreenLboxCanvas = document.createElement("canvas");
+    offscreenLboxCanvas.width = MODEL_CONSTANTS.yoloSize;
+    offscreenLboxCanvas.height = MODEL_CONSTANTS.yoloSize;
+    const lboxCtx = offscreenLboxCanvas.getContext("2d", {
+      willReadFrequently: true,
+    });
     const letterboxParams = this.#drawLetterboxImage(
-      ctx1,
+      lboxCtx,
       imageSource,
       origW,
       origH,
     );
-    await this.#sleep(500);
+
+    // 1. Kart (#canvas-step1): Letterbox 114 gri kenar dolgularından tamamen arındırılmış temiz yaprak
+    const c1 = document.getElementById("canvas-step1");
+    if (!c1) throw new Error("#canvas-step1 elementi DOM'da bulunamadı.");
+    c1.width = letterboxParams.scaledW;
+    c1.height = letterboxParams.scaledH;
+    const ctx1 = c1.getContext("2d", { willReadFrequently: true });
+    ctx1.drawImage(
+      imageSource,
+      0,
+      0,
+      letterboxParams.scaledW,
+      letterboxParams.scaledH,
+    );
+
+    const resEl = document.getElementById("metric-step1-res");
+    if (resEl) resEl.innerText = `${origW}x${origH}`;
+
+    // Aşamalı geçiş: 1. Kart yumuşakça belirir
+    this.#revealStepCard("card-step1");
+    await this.#sleep(450);
 
     // =========================================================================
     // ADIM 2: YOLOv8s-seg Segmentasyon & 84 Noktalı Organik Poligon (HUD Lazer)
     // =========================================================================
     this.#updateStepHeader(
       "ADIM 2: YOLOv8s-seg Segmentasyon",
-      "Organik yaprak sınırları ve lezyon poligonları taranıyor...",
+      "Organik yaprak sınırları ve lezyon poligonları lazerle taranıyor...",
     );
 
     const c2 = document.getElementById("canvas-step2");
     if (!c2) throw new Error("#canvas-step2 elementi DOM'da bulunamadı.");
-    c2.width = MODEL_CONSTANTS.yoloSize;
-    c2.height = MODEL_CONSTANTS.yoloSize;
+    c2.width = letterboxParams.scaledW;
+    c2.height = letterboxParams.scaledH;
     const ctx2 = c2.getContext("2d");
 
+    // YOLOv8s-seg çıkarımı 640x640 tensör tuvali üzerinden çalışır
     const yoloResult = await this.#executeYoloSegmentation(
-      ctx1,
+      lboxCtx,
       letterboxParams,
     );
 
@@ -228,71 +267,58 @@ class ModelPipelineOrchestrator {
       leafConfEl.innerText = `%${yoloResult.leafConfidence.toFixed(1)}`;
     if (sevEl) sevEl.innerText = `%${yoloResult.severityRatio.toFixed(1)}`;
 
-    // Sinematik HUD Lazer Tarama Animasyonu
-    await this.#animateLaserScanSweep(ctx2, c1, yoloResult);
-    await this.#sleep(600);
+    this.#revealStepCard("card-step2");
+
+    // Sarı Lazer Scanline Animasyonunu Başlat
+    const card2 = document.getElementById("card-step2");
+    card2?.classList.add("scanline-active");
+
+    // Sinematik HUD Lazer Tarama Animasyonu (Unpad edilmiş koordinatlarda)
+    await this.#animateLaserScanSweep(ctx2, c1, yoloResult, letterboxParams);
+
+    card2?.classList.remove("scanline-active");
+    const step2Badge = document.getElementById("step2-status-badge");
+    if (step2Badge) {
+      step2Badge.innerText = "Tamamlandı";
+      step2Badge.className =
+        "text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700";
+    }
+    await this.#sleep(500);
 
     // =========================================================================
-    // ADIM 3: Zemin İzolasyonu (RGB 0,0,0 ile Saf İkili Maskeleme)
+    // ADIM 3: Zemin İzolasyonu (RGB 0,0,0) - Maske Birleştirme (Deliksiz Yaprak)
     // =========================================================================
     this.#updateStepHeader(
       "ADIM 3: Zemin İzolasyonu (RGB 0,0,0)",
-      "Yaprak dokusu korunarak arka plan tamamen sıfırlanıyor (RGB 0,0,0)...",
+      "Mantıksal VEYA (leaf | lesion) ile yaprak deliksiz izole ediliyor, zemin saf siyah...",
     );
 
     const c3 = document.getElementById("canvas-step3");
     if (!c3) throw new Error("#canvas-step3 elementi DOM'da bulunamadı.");
-    c3.width = MODEL_CONSTANTS.yoloSize;
-    c3.height = MODEL_CONSTANTS.yoloSize;
+    c3.width = letterboxParams.scaledW;
+    c3.height = letterboxParams.scaledH;
     const ctx3 = c3.getContext("2d", { willReadFrequently: true });
 
-    // Tensör bozulmasını engelleyen doğrudan ikili piksel transferi
-    this.#applyBackgroundIsolation(ctx3, c1, yoloResult);
-    await this.#sleep(600);
+    // final_mask = (leaf_mask | lesion_mask) ile deliksiz ikili piksel transferi
+    this.#applyBackgroundIsolation(ctx3, c1, yoloResult, letterboxParams);
+    this.#revealStepCard("card-step3");
+    await this.#sleep(500);
 
     // =========================================================================
-    // ADIM 4: EfficientNet-B0 Morfoloji Doğrulama & Bakanlık Reçetesi
+    // ADIM 4: EfficientNet-B0 Sınıflandırma, 3 Sınıf Olasılık Dağılımı & Reçete
     // =========================================================================
     this.#updateStepHeader(
-      "ADIM 4: EfficientNet-B0 & Zirai Reçete",
-      "İzole yaprak morfolojisi Pas Akarı ve doku sağlığı için doğrulanıyor...",
+      "ADIM 4: Sınıflandırma & Zirai Reçete",
+      "İzole yaprak 3 sınıflı olasılık dağılımı ve Bakanlık reçetesi üretiliyor...",
     );
 
-    const effResult = await this.#executeEfficientNetClassification(c3);
+    const effResult = await this.#executeEfficientNetClassification(
+      c3,
+      yoloResult,
+    );
 
-    let finalDiagnosis = null;
-
-    // Epidemiyolojik Teşhis Önceliği: Belirgin lezyon varsa Halkalı Leke
-    if (yoloResult.hasLesion && yoloResult.severityRatio >= 0.5) {
-      finalDiagnosis = {
-        disease: AI_CLASSES?.PEACOCK || "Halkalı Leke (Spilocaea oleagina)",
-        type: "peacock",
-        confidence: yoloResult.lesionConfidence,
-        severity: yoloResult.severityRatio,
-        prescription:
-          "Bakanlık Reçetesi: %1-1.5'lik Bordo Bulamacı veya Bakır Oksiklorür uygulayınız. Ağacın iç kısımlarını ve alt etek dallarını bolca yıkayınız.",
-      };
-    } else if (effResult.type === "mite") {
-      finalDiagnosis = {
-        disease: AI_CLASSES?.MITE || "Zeytin Pas Akarı (Aceria oleae)",
-        type: "mite",
-        confidence: effResult.confidence,
-        severity: yoloResult.severityRatio,
-        prescription:
-          "Bakanlık Reçetesi: Zeytin Pas Akarı kolonizasyonu tespit edildi. Islanabilir Kükürt (WP) veya Abamectin uygulayınız. Taze sürgünlerin yaprak altı yüzeylerini hedef alınız.",
-      };
-    } else {
-      finalDiagnosis = {
-        disease: AI_CLASSES?.HEALTHY || "Sağlıklı Gemlik Yaprağı",
-        type: "healthy",
-        confidence: effResult.confidence,
-        severity: yoloResult.severityRatio,
-        prescription:
-          "Bakanlık Tavsiyesi: Yaprak dokusu ve morfolojisi temiz. Standart kültürel bakım ve budama takvimine devam ediniz.",
-      };
-    }
-
-    this.#renderStep4Results(finalDiagnosis);
+    this.#revealStepCard("diagnosis-card");
+    this.#renderStep4Results(effResult);
   }
 
   /**
@@ -471,9 +497,22 @@ class ModelPipelineOrchestrator {
       );
     }
 
+    // =========================================================================
+    // KRİTİK ONARIM (Madde 2): Delik Yaprak Onarımı — final_mask = (leaf | lesion)
+    // =========================================================================
+    // Modelde hem leaf hem lesion sınıfları ayrık maskeler üretebilir.
+    // Yaprak dokusunun içinde lezyon alanlarının siyah delikler oluşturmasını engellemek
+    // için maskeler mantıksal VEYA (Logical OR / Union) ile bir bütün halinde birleştirilir.
+    const finalMaskBuffer = new Uint8Array(protoSize * protoSize);
+    for (let i = 0; i < finalMaskBuffer.length; i++) {
+      finalMaskBuffer[i] =
+        leafMaskBuffer[i] | (hasLesion ? lesionMaskBuffer[i] : 0);
+    }
+
     // Dokümantasyon Madde 5.2: 84 Noktalı Organik Poligon ve Gauss Shoelace Hesabı
+    // Deliksiz birleşik yaprak geometrisi (finalMaskBuffer) üzerinden hesaplanır
     const leafGeom = this.#extractOrganicPolygonAndArea(
-      leafMaskBuffer,
+      finalMaskBuffer,
       protoSize,
       protoSize,
       MODEL_CONSTANTS.polygonPoints,
@@ -489,7 +528,7 @@ class ModelPipelineOrchestrator {
       );
     }
 
-    // Hastalık Şiddeti (%) = (Alan_Lezyon / Alan_Yaprak) * 100
+    // Hastalık Şiddeti (%) = (Alan_Lezyon / Alan_Yaprak_Deliksiz) * 100
     const severityRatio =
       leafGeom.area > 0
         ? Math.min(100.0, (lesionGeom.area / leafGeom.area) * 100.0)
@@ -516,7 +555,9 @@ class ModelPipelineOrchestrator {
       severityRatio: Number(severityRatio.toFixed(1)),
       leafMaskCanvas,
       lesionMaskCanvas,
+      rawFinalMaskBuffer: finalMaskBuffer,
       rawLeafMaskBuffer: leafMaskBuffer,
+      rawLesionMaskBuffer: lesionMaskBuffer,
       leafPolygon: leafGeom.polygon,
       lesionPolygon: lesionGeom.polygon,
     };
@@ -664,9 +705,13 @@ class ModelPipelineOrchestrator {
 
   /**
    * HUD Sarı Lazer Tarama Animasyonunu Canvas-Step2 Üzerinde Oynatır.
+   * Letterbox gri dolgularından arındırılmış (unpad) koordinatlarda çalışır.
    */
-  async #animateLaserScanSweep(ctx, rawCanvas, yoloResult) {
-    const size = MODEL_CONSTANTS.yoloSize;
+  async #animateLaserScanSweep(ctx, rawCanvas, yoloResult, lbox) {
+    const width = lbox?.scaledW ?? rawCanvas.width;
+    const height = lbox?.scaledH ?? rawCanvas.height;
+    const padX = lbox?.padX ?? 0;
+    const padY = lbox?.padY ?? 0;
     const duration = 1600;
     const startTime = performance.now();
 
@@ -674,44 +719,88 @@ class ModelPipelineOrchestrator {
       const renderFrame = (now) => {
         const elapsed = now - startTime;
         const progress = Math.min(1.0, elapsed / duration);
-        const laserY = progress * size;
+        const laserY = progress * height;
 
-        ctx.drawImage(rawCanvas, 0, 0);
+        // Letterbox dolgusu olmayan saf odaklanmış yaprak görselini çiz
+        ctx.drawImage(rawCanvas, 0, 0, width, height);
 
         ctx.save();
         ctx.beginPath();
-        ctx.rect(0, 0, size, laserY);
+        ctx.rect(0, 0, width, laserY);
         ctx.clip();
 
+        // 640x640 maskelerden padX, padY çıkarılarak unpad edilmiş yaprağa giydirilir
         if (yoloResult.leafMaskCanvas) {
-          ctx.drawImage(yoloResult.leafMaskCanvas, 0, 0);
+          ctx.drawImage(
+            yoloResult.leafMaskCanvas,
+            padX,
+            padY,
+            width,
+            height,
+            0,
+            0,
+            width,
+            height,
+          );
         }
 
         if (yoloResult.hasLesion && yoloResult.lesionMaskCanvas) {
-          ctx.drawImage(yoloResult.lesionMaskCanvas, 0, 0);
+          ctx.drawImage(
+            yoloResult.lesionMaskCanvas,
+            padX,
+            padY,
+            width,
+            height,
+            0,
+            0,
+            width,
+            height,
+          );
         }
         ctx.restore();
 
-        // Parlayan Sarı Lazer Çizgisi
+        // Parlayan Sarı Lazer Çizgisi (@keyframes scanline ile senkronize)
         ctx.save();
-        ctx.strokeStyle = "#f59e0b";
+        ctx.strokeStyle = "#facc15";
         ctx.lineWidth = 3;
-        ctx.shadowColor = "#f59e0b";
+        ctx.shadowColor = "#facc15";
         ctx.shadowBlur = 14;
         ctx.beginPath();
         ctx.moveTo(0, laserY);
-        ctx.lineTo(size, laserY);
+        ctx.lineTo(width, laserY);
         ctx.stroke();
         ctx.restore();
 
         if (progress < 1.0) {
           requestAnimationFrame(renderFrame);
         } else {
-          ctx.drawImage(rawCanvas, 0, 0);
-          if (yoloResult.leafMaskCanvas)
-            ctx.drawImage(yoloResult.leafMaskCanvas, 0, 0);
-          if (yoloResult.hasLesion && yoloResult.lesionMaskCanvas)
-            ctx.drawImage(yoloResult.lesionMaskCanvas, 0, 0);
+          ctx.drawImage(rawCanvas, 0, 0, width, height);
+          if (yoloResult.leafMaskCanvas) {
+            ctx.drawImage(
+              yoloResult.leafMaskCanvas,
+              padX,
+              padY,
+              width,
+              height,
+              0,
+              0,
+              width,
+              height,
+            );
+          }
+          if (yoloResult.hasLesion && yoloResult.lesionMaskCanvas) {
+            ctx.drawImage(
+              yoloResult.lesionMaskCanvas,
+              padX,
+              padY,
+              width,
+              height,
+              0,
+              0,
+              width,
+              height,
+            );
+          }
           resolve();
         }
       };
@@ -722,37 +811,47 @@ class ModelPipelineOrchestrator {
 
   /**
    * Dokümantasyon Madde 1 & 4.7: Zemin İzolasyonu (RGB 0,0,0)
-   * Doğrudan piksel düzeyinde ikili maskeleme ile alfa kirlenmesini önler.
+   * Delik Yaprak Onarımı: Mantıksal VEYA (leaf | lesion) ile deliksiz yaprak dokusu.
+   * Letterbox gri kenar blokları unpad edilerek tamamen yok edilir.
    */
-  #applyBackgroundIsolation(ctx, sourceCanvas, yoloResult) {
-    const size = MODEL_CONSTANTS.yoloSize;
+  #applyBackgroundIsolation(ctx, sourceCanvas, yoloResult, lbox) {
+    const width = lbox?.scaledW ?? sourceCanvas.width;
+    const height = lbox?.scaledH ?? sourceCanvas.height;
+    const padX = lbox?.padX ?? 0;
+    const padY = lbox?.padY ?? 0;
 
     // 1. Zemin tuvalini tamamen saf RGB(0,0,0) ile doldur
     ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, size, size);
+    ctx.fillRect(0, 0, width, height);
 
-    if (!yoloResult.rawLeafMaskBuffer) return;
+    // Mantıksal VEYA ile birleştirilmiş maskeyi öncelikle tercih et (deliksiz yaprak)
+    const maskBuffer =
+      yoloResult.rawFinalMaskBuffer || yoloResult.rawLeafMaskBuffer;
+    if (!maskBuffer) return;
 
-    // 2. Kaynak görüntü piksellerini al
+    // 2. Kaynak görüntü piksellerini al (unpad edilmiş temiz yaprak)
     const sourceCtx = sourceCanvas.getContext("2d");
-    const srcImgData = sourceCtx.getImageData(0, 0, size, size);
-    const outImgData = ctx.createImageData(size, size);
+    const srcImgData = sourceCtx.getImageData(0, 0, width, height);
+    const outImgData = ctx.createImageData(width, height);
 
     const srcPixels = srcImgData.data;
     const outPixels = outImgData.data;
-    const maskBuffer = yoloResult.rawLeafMaskBuffer;
     const protoSize = MODEL_CONSTANTS.protoSize;
-    const scale = size / protoSize; // 640 / 160 = 4
+    const yoloSize = MODEL_CONSTANTS.yoloSize; // 640
 
-    // 3. Yaprak dokusu %100 orijinal RGB tonlarını korur, arka plan saf siyah kalır
-    for (let y = 0; y < size; y++) {
-      const protoY = Math.floor(y / scale);
-      const protoRowOffset = protoY * protoSize;
-      const rowOffset = y * size;
+    // 3. Yaprak dokusu ve lezyonlar deliksiz bir bütün olarak korunur, arka plan saf siyah kalır
+    for (let y = 0; y < height; y++) {
+      const yInYolo = y + padY;
+      const protoY = Math.floor((yInYolo * protoSize) / yoloSize);
+      const safeProtoY = Math.min(protoSize - 1, Math.max(0, protoY));
+      const protoRowOffset = safeProtoY * protoSize;
+      const rowOffset = y * width;
 
-      for (let x = 0; x < size; x++) {
-        const protoX = Math.floor(x / scale);
-        const maskVal = maskBuffer[protoRowOffset + protoX];
+      for (let x = 0; x < width; x++) {
+        const xInYolo = x + padX;
+        const protoX = Math.floor((xInYolo * protoSize) / yoloSize);
+        const safeProtoX = Math.min(protoSize - 1, Math.max(0, protoX));
+        const maskVal = maskBuffer[protoRowOffset + safeProtoX];
         const p = (rowOffset + x) * 4;
 
         if (maskVal === 255) {
@@ -773,9 +872,10 @@ class ModelPipelineOrchestrator {
   }
 
   /**
-   * 2. Kademe EfficientNet-B0 Sınıflandırıcısı ve Tensör Temizliği
+   * 2. Kademe EfficientNet-B0 Sınıflandırıcısı ve 3 Sınıflı Olasılık Dağılımı (Probability Breakdown)
+   * YOLOv8s-seg ve EfficientNet-B0 çıktılarının hibrit birleştirilmesi.
    */
-  async #executeEfficientNetClassification(isolatedCanvas) {
+  async #executeEfficientNetClassification(isolatedCanvas, yoloResult) {
     if (!this.#classifierSession) {
       throw new Error(
         "EfficientNet-B0 oturumu aktif değil. Sahte çıkarım engellendi.",
@@ -783,7 +883,7 @@ class ModelPipelineOrchestrator {
     }
 
     const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = MODEL_CONSTANTS.classifierSize;
+    tempCanvas.width = MODEL_CONSTANTS.classifierSize; // 224
     tempCanvas.height = MODEL_CONSTANTS.classifierSize;
     const tempCtx = tempCanvas.getContext("2d");
 
@@ -811,25 +911,75 @@ class ModelPipelineOrchestrator {
       const outNames = Object.keys(outputMap);
       const logits = outputMap[outNames[0]].data;
 
-      // Softmax aktivasyonu
-      const exp0 = Math.exp(logits[0] || 0); // Sınıf 0: Sağlıklı
-      const exp1 = Math.exp(logits[1] || 0); // Sınıf 1: Pas Akarı
-      const sumExp = exp0 + exp1;
-      const probMite = exp1 / sumExp;
+      // Modelin ürettiği 3 sınıfın Softmax aktivasyonu (Sayısal kararlılık ile)
+      const l0 = logits[0] ?? 0; // Sınıf 0: Sağlıklı Gemlik Yaprağı
+      const l1 = logits[1] ?? 0; // Sınıf 1: Zeytin Pas Akarı (Aceria oleae)
+      const l2 = logits[2] ?? 0; // Sınıf 2: Zeytin Halkalı Leke Hastalığı
 
-      if (probMite >= 0.5) {
-        return {
-          disease: AI_CLASSES?.MITE || "Zeytin Pas Akarı (Aceria oleae)",
-          type: "mite",
-          confidence: Number((probMite * 100).toFixed(1)),
-        };
-      } else {
-        return {
-          disease: AI_CLASSES?.HEALTHY || "Sağlıklı Gemlik Yaprağı",
-          type: "healthy",
-          confidence: Number(((exp0 / sumExp) * 100).toFixed(1)),
-        };
+      const maxL = Math.max(l0, l1, l2);
+      const exp0 = Math.exp(l0 - maxL);
+      const exp1 = Math.exp(l1 - maxL);
+      const exp2 = Math.exp(l2 - maxL);
+      const sumExp = exp0 + exp1 + exp2;
+
+      let pHealthy = (exp0 / sumExp) * 100;
+      let pMite = (exp1 / sumExp) * 100;
+      let pPeacock = (exp2 / sumExp) * 100;
+
+      // =======================================================================
+      // ÇİFT KADEMELİ HİBRİT ÇIKARIM: YOLOv8s-seg + EfficientNet-B0
+      // =======================================================================
+      // Epidemiyolojik Öncelik: YOLO yaprak üzerinde morfolojik lezyon saptadıysa (%0.5+)
+      // Halkalı Leke olasılığı YOLO lezyon güveniyle desteklenir.
+      if (yoloResult?.hasLesion && (yoloResult.severityRatio >= 0.5 || yoloResult.lesionConfidence >= 35.0)) {
+        const yoloLesionConf = yoloResult.lesionConfidence;
+        pPeacock = Math.max(pPeacock, yoloLesionConf);
+        const remaining = Math.max(0.1, 100.0 - pPeacock);
+        const subSum = exp0 + exp1 || 1.0;
+        pHealthy = (exp0 / subSum) * remaining;
+        pMite = (exp1 / subSum) * remaining;
       }
+
+      // 3 sınıfın toplamını tam %100.0 olacak şekilde normalize et
+      const totalP = pHealthy + pMite + pPeacock || 1.0;
+      pHealthy = Number(((pHealthy / totalP) * 100).toFixed(1));
+      pMite = Number(((pMite / totalP) * 100).toFixed(1));
+      pPeacock = Number(((pPeacock / totalP) * 100).toFixed(1));
+
+      // Kazanan Sınıfı Belirle
+      let winningType = "healthy";
+      let winningTitle = AI_CLASSES?.HEALTHY || "Sağlıklı Gemlik Yaprağı";
+      let winningConf = pHealthy;
+      let prescription =
+        "Bakanlık Tavsiyesi: Yaprak dokusu ve morfolojisi temiz. Standart kültürel bakım ve budama takvimine devam ediniz.";
+
+      if (pPeacock >= pMite && pPeacock >= pHealthy) {
+        winningType = "peacock";
+        winningTitle =
+          AI_CLASSES?.PEACOCK || "Halkalı Leke (Spilocaea oleagina)";
+        winningConf = pPeacock;
+        prescription =
+          "Bakanlık Reçetesi: %1-1.5'lik Bordo Bulamacı veya Bakır Oksiklorür uygulayınız. Ağacın iç kısımlarını ve alt etek dallarını bolca yıkayınız.";
+      } else if (pMite >= pPeacock && pMite >= pHealthy) {
+        winningType = "mite";
+        winningTitle = AI_CLASSES?.MITE || "Zeytin Pas Akarı (Aceria oleae)";
+        winningConf = pMite;
+        prescription =
+          "Bakanlık Reçetesi: Zeytin Pas Akarı kolonizasyonu tespit edildi. Islanabilir Kükürt (WP) veya Abamectin uygulayınız. Taze sürgünlerin yaprak altı yüzeylerini hedef alınız.";
+      }
+
+      return {
+        disease: winningTitle,
+        type: winningType,
+        confidence: winningConf,
+        severity: yoloResult?.severityRatio ?? 0,
+        prescription,
+        probabilities: {
+          peacock: pPeacock,
+          mite: pMite,
+          healthy: pHealthy,
+        },
+      };
     } finally {
       // Wasm tensör bellek sızıntısını önle
       inputTensor.dispose?.();
@@ -842,7 +992,7 @@ class ModelPipelineOrchestrator {
   }
 
   /**
-   * Dokümantasyon Madde 4.7: %30.1 Başlangıçlı Güven Çubuğu ve Reçete Render'ı
+   * Dokümantasyon Madde 4.7 & 3 Sınıfın Olasılık Dağılımı (Probability Breakdown) Render
    */
   #renderStep4Results(diag) {
     const titleEl = document.getElementById("diagnosis-title");
@@ -864,15 +1014,15 @@ class ModelPipelineOrchestrator {
 
     if (prescTextEl) prescTextEl.innerText = diag.prescription;
 
-    // Dokümantasyon Madde 4.7 uyarınca %30.1 tabanlı animasyon akışı
+    // Dokümantasyon Madde 4.7 uyarınca %30.1 tabanlı yumuşak animasyon akışı
     const targetConf = diag.confidence;
-    let currentConf = 30.1;
+    let currentConf = Math.min(30.1, targetConf);
 
-    if (confBarEl) confBarEl.style.width = "30.1%";
-    if (confTextEl) confTextEl.innerText = "%30.1";
+    if (confBarEl) confBarEl.style.width = `${currentConf}%`;
+    if (confTextEl) confTextEl.innerText = `%${currentConf.toFixed(1)}`;
 
     this.#confidenceIntervalId = setInterval(() => {
-      currentConf += 3.5;
+      currentConf += 2.5;
       if (currentConf >= targetConf) {
         currentConf = targetConf;
         clearInterval(this.#confidenceIntervalId);
@@ -880,7 +1030,54 @@ class ModelPipelineOrchestrator {
       }
       if (confTextEl) confTextEl.innerText = `%${currentConf.toFixed(1)}`;
       if (confBarEl) confBarEl.style.width = `${currentConf}%`;
-    }, 35);
+    }, 25);
+
+    // =========================================================================
+    // 3 SINIFIN OLASILIK DAĞILIMI (PROBABILITY BREAKDOWN) RENDER
+    // =========================================================================
+    const probs = diag.probabilities || {
+      peacock: 0,
+      mite: 0,
+      healthy: 100,
+    };
+
+    const peacockValEl = document.getElementById("prob-val-peacock");
+    const peacockBarEl = document.getElementById("prob-bar-peacock");
+    const miteValEl = document.getElementById("prob-val-mite");
+    const miteBarEl = document.getElementById("prob-bar-mite");
+    const healthyValEl = document.getElementById("prob-val-healthy");
+    const healthyBarEl = document.getElementById("prob-bar-healthy");
+
+    if (peacockValEl) peacockValEl.innerText = `%${probs.peacock.toFixed(1)}`;
+    if (peacockBarEl) {
+      setTimeout(() => {
+        peacockBarEl.style.width = `${probs.peacock}%`;
+      }, 50);
+    }
+
+    if (miteValEl) miteValEl.innerText = `%${probs.mite.toFixed(1)}`;
+    if (miteBarEl) {
+      setTimeout(() => {
+        miteBarEl.style.width = `${probs.mite}%`;
+      }, 100);
+    }
+
+    if (healthyValEl) healthyValEl.innerText = `%${probs.healthy.toFixed(1)}`;
+    if (healthyBarEl) {
+      setTimeout(() => {
+        healthyBarEl.style.width = `${probs.healthy}%`;
+      }, 150);
+    }
+  }
+
+  /**
+   * Kademeli Görselleştirme: Kartı yumuşak geçişle ekranda belirginleştirir.
+   */
+  #revealStepCard(cardId) {
+    const card = document.getElementById(cardId);
+    if (card) {
+      card.classList.add("is-visible");
+    }
   }
 
   #updateStepHeader(title, desc) {

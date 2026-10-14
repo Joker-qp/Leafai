@@ -104,7 +104,8 @@ function evaluateDailyPeacockRisk({ tMean, hum, rain, thresholds }) {
   const tempMin = thresholds?.peacockTempMin ?? 10;
   const tempMax = thresholds?.peacockTempMax ?? 20;
   const humThreshold = thresholds?.peacockHumidity ?? 85;
-  const rainMin = thresholds?.peacockRainMin ?? 2.0;
+  const rainMin =
+    thresholds?.peacockRainTrigger ?? thresholds?.peacockRainMin ?? 2.0;
 
   const isOptimumTemp = tMean >= tempMin && tMean <= tempMax;
 
@@ -239,6 +240,7 @@ class HistoricalArchiveServiceEngine {
       peacockTempMin: 10,
       peacockTempMax: 20,
       peacockHumidity: 85,
+      peacockRainTrigger: 2.0,
       peacockRainMin: 2.0,
       miteTempMin: 22,
       miteHumidityMax: 70,

@@ -328,7 +328,11 @@ class WeatherServiceOrchestrator {
   async getForecast(lat, lon, forceRefresh = false) {
     const weatherConfig = AppConfig.getWeatherConfig();
     const provider = weatherConfig.provider || WEATHER_PROVIDERS.OPEN_METEO;
-    const apiKey = weatherConfig.apiKey || "";
+    // Güvenlik & Entegrasyon: API çağrıları için AppConfig'ten ham (raw/decrypted) anahtar alınır
+    const apiKey =
+      (typeof AppConfig.getRawWeatherApiKey === "function"
+        ? AppConfig.getRawWeatherApiKey()
+        : weatherConfig.apiKey) || "";
 
     const cacheKey = `${provider}_${lat.toFixed(3)}_${lon.toFixed(3)}`;
     const now = Date.now();

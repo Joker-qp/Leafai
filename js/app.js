@@ -392,23 +392,104 @@ class GemlikZeytinAIApplication {
   }
 
   /**
-   * ERA5 Arşiv UI bileşenlerini (Soğuklama saati ve kümülatif yağış) günceller.
+   * ERA5 Arşiv UI bileşenlerini (Soğuklama saati, kümülatif yağış, risk günleri ve 12 aylık grid) günceller.
    */
   #renderAnnualArchiveUI(archiveData) {
-    const chillingHoursEl = document.getElementById("era5-chilling-hours-val");
-    const annualRainfallEl = document.getElementById(
-      "era5-annual-rainfall-val",
+    if (!archiveData) return;
+
+    const chillingHoursEl = document.getElementById(
+      "annual-chilling-hours-val",
     );
-    const highRiskDaysEl = document.getElementById("era5-high-risk-days-val");
+    const annualRainfallEl = document.getElementById("annual-total-rain-val");
+    const highRiskDaysEl = document.getElementById("annual-risk-days-val");
+    const progressBar = document.getElementById(
+      "annual-chilling-progress-bar",
+    );
+    const statusBadge = document.getElementById(
+      "annual-chilling-status-badge",
+    );
+    const monthlyGrid = document.getElementById("annual-monthly-grid");
+
+    const chillingHours = archiveData.chillingHoursEstimate || 0;
+    const totalRain = archiveData.totalRainfallMm || 0;
+    const riskDays = archiveData.highRiskDaysCount || 0;
 
     if (chillingHoursEl) {
-      chillingHoursEl.innerText = `${archiveData.chillingHoursEstimate} Saat`;
+      chillingHoursEl.innerText = `${chillingHours}`;
     }
     if (annualRainfallEl) {
-      annualRainfallEl.innerText = `${archiveData.totalRainfallMm.toFixed(1)} mm`;
+      annualRainfallEl.innerText = `${totalRain.toFixed(1)}`;
     }
     if (highRiskDaysEl) {
-      highRiskDaysEl.innerText = `${archiveData.highRiskDaysCount} Gün`;
+      highRiskDaysEl.innerText = `${riskDays}`;
+    }
+
+    // Soğuklama İlerleme Çubuğu (Hedef: 400 - 600 saat)
+    if (progressBar) {
+      const progressPercent = Math.min(
+        100,
+        Math.max(0, Math.round((chillingHours / 600) * 100)),
+      );
+      progressBar.style.width = `${progressPercent}%`;
+    }
+
+    // Fenolojik Soğuklama Karşılama Durumu
+    if (statusBadge) {
+      if (chillingHours >= 500) {
+        statusBadge.innerText = "Hedef Karşılandı (%100)";
+        statusBadge.className =
+          "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800";
+      } else if (chillingHours >= 400) {
+        statusBadge.innerText = "Asgari Karşılandı (Risk Yok)";
+        statusBadge.className =
+          "px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800";
+      } else {
+        statusBadge.innerText = "Soğuklama Birikimi Yetersiz";
+        statusBadge.className =
+          "px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800";
+      }
+    }
+
+    // 12 Aylık Dağılım Tablosu Grid Kartları
+    if (
+      monthlyGrid &&
+      Array.isArray(archiveData.monthlySummaries) &&
+      archiveData.monthlySummaries.length > 0
+    ) {
+      const monthNames = [
+        "Oca",
+        "Şub",
+        "Mar",
+        "Nis",
+        "May",
+        "Haz",
+        "Tem",
+        "Ağu",
+        "Eyl",
+        "Eki",
+        "Kas",
+        "Ara",
+      ];
+      monthlyGrid.innerHTML = archiveData.monthlySummaries
+        .map((item) => {
+          const parts = (item.month || "").split("-");
+          const monthIdx = parts[1] ? parseInt(parts[1], 10) - 1 : 0;
+          const monthLabel = monthNames[monthIdx] || item.month;
+          const yearShort = parts[0] ? `'${parts[0].slice(2)}` : "";
+          const isRiskMonth = (item.riskDays || 0) > 0;
+
+          return `
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-center space-y-1">
+              <span class="text-[11px] font-bold text-slate-700 block">${monthLabel} ${yearShort}</span>
+              <div class="text-xs font-black text-slate-900">${(item.avgTemp ?? 0).toFixed(1)}°C</div>
+              <div class="text-[10px] text-blue-600 font-semibold">${(item.totalRain ?? 0).toFixed(1)} mm</div>
+              <div class="text-[10px] ${isRiskMonth ? "text-red-600 font-bold" : "text-slate-400"}">
+                ${item.riskDays || 0} riskli gün
+              </div>
+            </div>
+          `;
+        })
+        .join("");
     }
   }
 
@@ -452,6 +533,9 @@ class GemlikZeytinAIApplication {
   #bindVideoPlayerEvents() {
     const videoInput = document.getElementById("local-video-input");
     const videoPlayer = document.getElementById("cinematic-demo-video");
+    const triggerBtn = document.getElementById("btn-trigger-local-video");
+
+    triggerBtn?.addEventListener("click", () => videoInput?.click());
 
     videoInput?.addEventListener("change", (e) => {
       const file = e.target.files?.[0];
@@ -533,15 +617,22 @@ class GemlikZeytinAIApplication {
   #hydrateAdminThresholds() {
     const thresholds = AppConfig.getThresholds();
     const peacockHum = document.getElementById("adm-peacock-hum");
-    const peacockTemp = document.getElementById("adm-peacock-temp");
+    const peacockTempMin = document.getElementById("adm-peacock-temp-min");
+    const peacockTempMax = document.getElementById("adm-peacock-temp-max");
+    const peacockRain = document.getElementById("adm-peacock-rain");
     const miteTemp = document.getElementById("adm-mite-temp");
     const miteHum = document.getElementById("adm-mite-hum");
+    const miteRain = document.getElementById("adm-mite-rain");
 
     if (peacockHum) peacockHum.value = thresholds.peacockHumidity;
-    if (peacockTemp)
-      peacockTemp.value = `${thresholds.peacockTempMin}-${thresholds.peacockTempMax}`;
+    if (peacockTempMin) peacockTempMin.value = thresholds.peacockTempMin;
+    if (peacockTempMax) peacockTempMax.value = thresholds.peacockTempMax;
+    if (peacockRain)
+      peacockRain.value =
+        thresholds.peacockRainTrigger ?? thresholds.peacockRainMin ?? 2.0;
     if (miteTemp) miteTemp.value = thresholds.miteTempMin;
     if (miteHum) miteHum.value = thresholds.miteHumidityMax;
+    if (miteRain) miteRain.value = thresholds.miteRainSuppression ?? 5.0;
   }
 
   /**
@@ -579,20 +670,31 @@ class GemlikZeytinAIApplication {
 
   #handleAdminThresholdsSave() {
     const hum = parseFloat(document.getElementById("adm-peacock-hum")?.value);
-    const tempRange = (
-      document.getElementById("adm-peacock-temp")?.value || "10-20"
-    ).split("-");
+    const tempMin = parseFloat(
+      document.getElementById("adm-peacock-temp-min")?.value,
+    );
+    const tempMax = parseFloat(
+      document.getElementById("adm-peacock-temp-max")?.value,
+    );
+    const peacockRain = parseFloat(
+      document.getElementById("adm-peacock-rain")?.value,
+    );
     const miteTemp = parseFloat(
       document.getElementById("adm-mite-temp")?.value,
     );
     const miteHum = parseFloat(document.getElementById("adm-mite-hum")?.value);
+    const miteRain = parseFloat(
+      document.getElementById("adm-mite-rain")?.value,
+    );
 
     AppConfig.setThresholds({
       peacockHumidity: Number.isNaN(hum) ? 85 : hum,
-      peacockTempMin: parseFloat(tempRange[0]) || 10,
-      peacockTempMax: parseFloat(tempRange[1]) || 20,
+      peacockTempMin: Number.isNaN(tempMin) ? 10 : tempMin,
+      peacockTempMax: Number.isNaN(tempMax) ? 20 : tempMax,
+      peacockRainTrigger: Number.isNaN(peacockRain) ? 2.0 : peacockRain,
       miteTempMin: Number.isNaN(miteTemp) ? 22 : miteTemp,
       miteHumidityMax: Number.isNaN(miteHum) ? 70 : miteHum,
+      miteRainSuppression: Number.isNaN(miteRain) ? 5.0 : miteRain,
     });
 
     const statusEl = document.getElementById("admin-save-status");
@@ -727,6 +829,26 @@ class GemlikZeytinAIApplication {
       ?.addEventListener("click", () =>
         this.#toggleModal("modal-admin-dashboard", false),
       );
+
+    // Dış alana (Backdrop) tıklayarak veya Escape tuşuyla modalları güvenle kapat
+    ["modal-settings", "modal-admin-auth", "modal-admin-dashboard"].forEach(
+      (modalId) => {
+        const modalEl = document.getElementById(modalId);
+        modalEl?.addEventListener("click", (e) => {
+          if (e.target === modalEl) {
+            this.#toggleModal(modalId, false);
+          }
+        });
+      },
+    );
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        this.#toggleModal("modal-settings", false);
+        this.#toggleModal("modal-admin-auth", false);
+        this.#toggleModal("modal-admin-dashboard", false);
+      }
+    });
   }
 
   #bindSettingsFormEvents() {
@@ -779,12 +901,13 @@ class GemlikZeytinAIApplication {
     const fileInput = document.getElementById("leaf-file-input");
     const uploadBtn = document.getElementById("btn-trigger-upload");
     const cameraBtn = document.getElementById("btn-trigger-camera");
+    const dropZone = document.getElementById("leaf-drop-zone");
 
-    uploadBtn?.addEventListener("click", () => fileInput?.click());
-
-    fileInput?.addEventListener("change", (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+    const processSelectedFile = (file) => {
+      if (!file || !file.type.startsWith("image/")) {
+        alert("Lütfen geçerli bir görsel dosyası seçin (JPG, PNG, WEBP).");
+        return;
+      }
 
       const img = new Image();
       const objectUrl = URL.createObjectURL(file);
@@ -805,9 +928,59 @@ class GemlikZeytinAIApplication {
       };
 
       img.src = objectUrl;
+    };
+
+    uploadBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      fileInput?.click();
     });
 
-    cameraBtn?.addEventListener("click", async () => {
+    // Dropzone tıklama ve klavye etkileşimi (Erişilebilirlik)
+    dropZone?.addEventListener("click", (e) => {
+      if (e.target.closest("#leaf-upload-actions")) return;
+      fileInput?.click();
+    });
+
+    dropZone?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        fileInput?.click();
+      }
+    });
+
+    // Sürükle - Bırak (Drag & Drop) Dinleyicileri
+    ["dragenter", "dragover"].forEach((eventName) => {
+      dropZone?.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add("border-olive-500", "bg-olive-50/40");
+      });
+    });
+
+    ["dragleave", "drop"].forEach((eventName) => {
+      dropZone?.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove("border-olive-500", "bg-olive-50/40");
+      });
+    });
+
+    dropZone?.addEventListener("drop", (e) => {
+      const droppedFiles = e.dataTransfer?.files;
+      if (droppedFiles && droppedFiles.length > 0) {
+        processSelectedFile(droppedFiles[0]);
+      }
+    });
+
+    fileInput?.addEventListener("change", (e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        processSelectedFile(file);
+      }
+    });
+
+    cameraBtn?.addEventListener("click", async (e) => {
+      e.stopPropagation();
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment" },
@@ -858,8 +1031,12 @@ class GemlikZeytinAIApplication {
 // Singleton Örneği Başlat
 const app = new GemlikZeytinAIApplication();
 
-document.addEventListener("DOMContentLoaded", () => {
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    app.initialize();
+  });
+} else {
   app.initialize();
-});
+}
 
 window.GemlikZeytinAI = app;

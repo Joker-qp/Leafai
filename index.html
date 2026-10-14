@@ -10,6 +10,10 @@
     />
 
     <title>Gemlik ZeytinAI — Yapay Zeka Teşhis ve İkili Risk Hattı</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>"
+    />
 
     <!-- Tailwind CSS (Kurumsal Üretim Yapılandırması) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -565,61 +569,114 @@
             </div>
           </div>
 
-          <!-- 640x640 Kare Oranlı Letterbox Canvas Izgarası (Deformasyon Giderildi) -->
+          <!-- Odaklanmış Canvas Izgarası (Letterbox Gri Dolguları Temizlendi, Simetrik Kartlar) -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div
-              class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-center space-y-2"
+              id="card-step1"
+              class="pipeline-step-card p-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-center space-y-2 flex flex-col justify-between"
             >
-              <span class="text-xs font-bold text-slate-500 block"
-                >1. Ham Yaprak (Letterbox 114)</span
-              >
-              <canvas
-                id="canvas-step1"
-                class="w-full aspect-square rounded-xl bg-slate-100 object-contain"
-              ></canvas>
-            </div>
-            <div
-              class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-center space-y-2"
-            >
-              <span class="text-xs font-bold text-slate-500 block"
-                >2. YOLOv8s-seg Segmentasyon</span
-              >
-              <canvas
-                id="canvas-step2"
-                class="w-full aspect-square rounded-xl bg-slate-100 object-contain"
-              ></canvas>
+              <div class="flex items-center justify-between px-1">
+                <span class="text-xs font-bold text-slate-700 block"
+                  >1. Giriş Görüntüsü</span
+                >
+                <span
+                  class="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600"
+                  >Odaklanmış</span
+                >
+              </div>
               <div
-                class="flex justify-between text-[11px] text-slate-600 px-1 pt-1"
+                class="relative overflow-hidden rounded-xl bg-slate-900/5 aspect-square flex items-center justify-center border border-slate-100"
+              >
+                <canvas
+                  id="canvas-step1"
+                  class="w-full h-full object-cover"
+                ></canvas>
+              </div>
+              <div
+                class="flex justify-between items-center text-[11px] text-slate-500 px-1 pt-1 border-t border-slate-100"
+              >
+                <span>Boyut:</span>
+                <b id="metric-step1-res" class="text-slate-700 font-mono"
+                  >--x--</b
+                >
+              </div>
+            </div>
+
+            <div
+              id="card-step2"
+              class="pipeline-step-card p-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-center space-y-2 flex flex-col justify-between"
+            >
+              <div class="flex items-center justify-between px-1">
+                <span class="text-xs font-bold text-slate-700 block"
+                  >2. YOLOv8s-seg Segmentasyon</span
+                >
+                <span
+                  id="step2-status-badge"
+                  class="text-[10px] font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-700"
+                  >Taranıyor</span
+                >
+              </div>
+              <div
+                class="scanline-container relative overflow-hidden rounded-xl bg-slate-900/5 aspect-square flex items-center justify-center border border-slate-100"
+              >
+                <div class="scanline-laser"></div>
+                <canvas
+                  id="canvas-step2"
+                  class="w-full h-full object-cover"
+                ></canvas>
+              </div>
+              <div
+                class="flex justify-between items-center text-[11px] text-slate-600 px-1 pt-1 border-t border-slate-100"
               >
                 <span
                   >Yaprak:
-                  <b id="metric-leaf-conf" class="text-emerald-600"
+                  <b id="metric-leaf-conf" class="text-emerald-600 font-mono"
                     >%--</b
                   ></span
                 >
                 <span
                   >Şiddet:
-                  <b id="metric-severity" class="text-red-600">%--</b></span
+                  <b id="metric-severity" class="text-red-600 font-mono"
+                    >%--</b
+                  ></span
                 >
               </div>
             </div>
+
             <div
-              class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-center space-y-2"
+              id="card-step3"
+              class="pipeline-step-card p-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-center space-y-2 flex flex-col justify-between"
             >
-              <span class="text-xs font-bold text-slate-500 block"
-                >3. İzole Yaprak (RGB 0,0,0)</span
+              <div class="flex items-center justify-between px-1">
+                <span class="text-xs font-bold text-slate-700 block"
+                  >3. İzole Yaprak (RGB 0,0,0)</span
+                >
+                <span
+                  class="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700"
+                  >Deliksiz Bütün</span
+                >
+              </div>
+              <div
+                class="relative overflow-hidden rounded-xl bg-black aspect-square flex items-center justify-center border border-slate-800"
               >
-              <canvas
-                id="canvas-step3"
-                class="w-full aspect-square rounded-xl bg-black object-contain"
-              ></canvas>
+                <canvas
+                  id="canvas-step3"
+                  class="w-full h-full object-cover"
+                ></canvas>
+              </div>
+              <div
+                class="flex justify-between items-center text-[11px] text-slate-500 px-1 pt-1 border-t border-slate-100"
+              >
+                <span>Arka Plan:</span>
+                <b class="text-emerald-600 font-mono">RGB (0,0,0) İzole</b>
+              </div>
             </div>
           </div>
 
           <!-- Teşhis ve Reçete Kartı İskeleti -->
           <div
             id="diagnosis-card"
-            class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4"
+            class="pipeline-step-card p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-5"
           >
             <div
               class="flex items-center justify-between border-b border-slate-100 pb-3"
@@ -645,11 +702,11 @@
               </span>
             </div>
 
-            <!-- Model Güven Çubuğu Animasyon Hattı -->
+            <!-- Model Baskın Güven Çubuğu Hattı -->
             <div class="space-y-1.5">
               <div class="flex justify-between text-xs font-semibold">
                 <span class="text-slate-600"
-                  >Model Doğrulama Güveni (Confidence):</span
+                  >Baskın Sınıf Doğrulama Güveni (Confidence):</span
                 >
                 <span
                   id="diagnosis-confidence-text"
@@ -663,6 +720,124 @@
                   class="h-full bg-olive-500 rounded-full transition-all duration-700 ease-out"
                   style="width: 0%"
                 ></div>
+              </div>
+            </div>
+
+            <!-- 3 Sınıfın Olasılık Dağılımı (Probability Breakdown) -->
+            <div class="space-y-3 pt-2 border-t border-slate-100">
+              <div
+                class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs font-bold text-slate-700"
+              >
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-chart-simple text-olive-600"></i>
+                  Model Sınıf Olasılık Dağılımı (Probability Breakdown)
+                </span>
+                <span class="text-[11px] font-normal text-slate-500"
+                  >EfficientNet-B0 + YOLOv8 Hibrit Doğrulama</span
+                >
+              </div>
+
+              <!-- 3 Sınıf Listesi -->
+              <div class="space-y-2.5" id="probabilities-breakdown-list">
+                <!-- 1. Sınıf: Halkalı Leke -->
+                <div
+                  class="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5"
+                >
+                  <div class="flex justify-between items-center text-xs">
+                    <span
+                      class="font-semibold text-slate-800 flex items-center gap-1.5"
+                    >
+                      <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                      Zeytin Halkalı Leke Hastalığı
+                      <span
+                        class="text-slate-400 font-normal italic text-[11px]"
+                        >(Spilocaea oleagina)</span
+                      >
+                    </span>
+                    <span
+                      id="prob-val-peacock"
+                      class="font-mono font-bold text-red-600"
+                      >%0.0</span
+                    >
+                  </div>
+                  <div
+                    class="w-full h-2 bg-slate-200 rounded-full overflow-hidden"
+                  >
+                    <div
+                      id="prob-bar-peacock"
+                      class="h-full bg-red-500 rounded-full transition-all duration-700 ease-out"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- 2. Sınıf: Zeytin Pas Akarı -->
+                <div
+                  class="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5"
+                >
+                  <div class="flex justify-between items-center text-xs">
+                    <span
+                      class="font-semibold text-slate-800 flex items-center gap-1.5"
+                    >
+                      <span
+                        class="w-2.5 h-2.5 rounded-full bg-amber-500"
+                      ></span>
+                      Zeytin Pas Akarı Morfolojisi
+                      <span
+                        class="text-slate-400 font-normal italic text-[11px]"
+                        >(Aceria oleae)</span
+                      >
+                    </span>
+                    <span
+                      id="prob-val-mite"
+                      class="font-mono font-bold text-amber-600"
+                      >%0.0</span
+                    >
+                  </div>
+                  <div
+                    class="w-full h-2 bg-slate-200 rounded-full overflow-hidden"
+                  >
+                    <div
+                      id="prob-bar-mite"
+                      class="h-full bg-amber-500 rounded-full transition-all duration-700 ease-out"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- 3. Sınıf: Sağlıklı Yaprak -->
+                <div
+                  class="p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5"
+                >
+                  <div class="flex justify-between items-center text-xs">
+                    <span
+                      class="font-semibold text-slate-800 flex items-center gap-1.5"
+                    >
+                      <span
+                        class="w-2.5 h-2.5 rounded-full bg-emerald-500"
+                      ></span>
+                      Sağlıklı Gemlik Yaprağı
+                      <span
+                        class="text-slate-400 font-normal italic text-[11px]"
+                        >(Healthy Tissue)</span
+                      >
+                    </span>
+                    <span
+                      id="prob-val-healthy"
+                      class="font-mono font-bold text-emerald-600"
+                      >%0.0</span
+                    >
+                  </div>
+                  <div
+                    class="w-full h-2 bg-slate-200 rounded-full overflow-hidden"
+                  >
+                    <div
+                      id="prob-bar-healthy"
+                      class="h-full bg-emerald-500 rounded-full transition-all duration-700 ease-out"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1104,7 +1279,7 @@
     <!-- SİSTEM VE API AYARLARI MODALI -->
     <div
       id="modal-settings"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"
+      class="fixed inset-0 z-50 items-center justify-center p-4 modal-backdrop hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-settings-title"
@@ -1287,7 +1462,7 @@
     <!-- YÖNETİCİ KİMLİK DOĞRULAMA MODALI -->
     <div
       id="modal-admin-auth"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"
+      class="fixed inset-0 z-50 items-center justify-center p-4 modal-backdrop hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-admin-auth-title"
@@ -1349,7 +1524,7 @@
     <!-- EPİDEMİYOLOJİK EŞİK YÖNETİMİ DASHBOARD MODALI -->
     <div
       id="modal-admin-dashboard"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"
+      class="fixed inset-0 z-50 items-center justify-center p-4 modal-backdrop hidden"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-admin-dash-title"

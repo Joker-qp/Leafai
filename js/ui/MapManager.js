@@ -101,6 +101,11 @@ class MapManagerOrchestrator {
       return;
     }
 
+    // Leaflet çifte başlatma hatasını (Map container is already initialized) önle
+    if (container._leaflet_id && !this.#map) {
+      delete container._leaflet_id;
+    }
+
     try {
       const defaultZoom = MAP_CONFIG?.defaultZoom ?? 13;
       const esriConfig = MAP_CONFIG?.esriTopo ?? {
@@ -131,6 +136,9 @@ class MapManagerOrchestrator {
       this.#bindInteractiveMapClicks();
 
       this.#isInitialized = true;
+      if (this.#cachedRiskReport) {
+        this.updateRiskDisplay(this.#cachedRiskReport, this.#cachedTelemetryState);
+      }
       this.invalidateSize();
 
       console.info(
@@ -247,12 +255,12 @@ class MapManagerOrchestrator {
    * @param {boolean} [shouldFly=false] - Harita kamerası uçurulsun mu?
    */
   updateLocation(lat, lon, name = "Zeytin Bahçesi", shouldFly = false) {
-    if (!this.#map) return;
-
     const targetLat = Number(lat);
     const targetLon = Number(lon);
 
     this.#cachedLocation = { lat: targetLat, lon: targetLon, name };
+
+    if (!this.#map) return;
 
     if (!this.#marker) {
       this.#createMarkerInstance(targetLat, targetLon, name);
@@ -284,8 +292,6 @@ class MapManagerOrchestrator {
    * @param {Object} [telemetryState] - Esp32 Telemetri durumu
    */
   updateRiskDisplay(overallRisk, telemetryState) {
-    if (!this.#map) return;
-
     // DTO Sözleşme Normalizasyonu (DualRiskAssessmentDTO veya DTO.overall güvenle karşılanır)
     const normalizedRisk = overallRisk?.overall
       ? overallRisk.overall
@@ -295,6 +301,8 @@ class MapManagerOrchestrator {
     if (telemetryState !== undefined) {
       this.#cachedTelemetryState = telemetryState;
     }
+
+    if (!this.#map) return;
 
     // Risk çemberi daima marker'ın güncel fiziksel koordinatlarını merkez alır
     const centerLatLng = this.#marker

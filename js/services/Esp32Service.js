@@ -377,7 +377,7 @@ class Esp32ServiceOrchestrator {
       hardwareConfig.nodePath || "esp32_station",
     ).trim();
     const sanitizedNodePath = rawNodePath
-      .replace(/^[/.]+|[/.]+$/g, "")
+      .replace(/^[\/.]+|[\/.]+$/g, "")
       .replace(/[^\w-]/g, "");
 
     if (!sanitizedNodePath) {
