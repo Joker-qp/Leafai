@@ -1,0 +1,1559 @@
+<!doctype html>
+<html lang="tr" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="description"
+      content="Gemlik Zeytini için Çift Kademeli ONNX Yapay Zeka Teşhisi, İkili Epidemiyolojik Risk ve CBS Erken Uyarı Motoru"
+    />
+
+    <title>Gemlik ZeytinAI — Yapay Zeka Teşhis ve İkili Risk Hattı</title>
+
+    <!-- Tailwind CSS (Kurumsal Üretim Yapılandırması) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              olive: {
+                50: "#f6f7f2",
+                100: "#ebede2",
+                200: "#d7dbc5",
+                500: "#5c6f34",
+                600: "#485827",
+                700: "#38451e",
+                800: "#2c3718",
+                900: "#1e2610",
+              },
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- İkon Seti ve Harita Stilleri -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body
+    class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col font-sans selection:bg-olive-500 selection:text-white"
+  >
+    <!-- Üst Başlık & Navigasyon -->
+    <header
+      class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 transition-colors"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Semantik ve Erişilebilir Marka Butonu -->
+          <button
+            type="button"
+            id="brand-logo-btn"
+            class="flex items-center gap-3 cursor-pointer select-none bg-transparent border-0 text-left p-0 focus:outline-none focus:ring-2 focus:ring-olive-500 rounded-xl"
+            aria-label="Ana Sayfaya Dön"
+          >
+            <div
+              class="w-10 h-10 rounded-xl bg-olive-500 flex items-center justify-center text-white shadow-md shadow-olive-500/20"
+            >
+              <i class="fa-solid fa-leaf text-xl" aria-hidden="true"></i>
+            </div>
+            <div>
+              <span
+                class="text-xl font-bold tracking-tight text-slate-900 block leading-tight"
+              >
+                Gemlik<span class="text-olive-500">ZeytinAI</span>
+              </span>
+              <span class="text-xs block text-slate-400 font-medium">
+                Olea europaea cv. Gemlik
+              </span>
+            </div>
+          </button>
+
+          <nav class="hidden md:flex items-center gap-1" aria-label="Ana Menü">
+            <button
+              id="nav-home"
+              type="button"
+              class="nav-btn px-4 py-2 rounded-lg text-sm font-semibold text-olive-600 bg-olive-50 transition"
+            >
+              <i class="fa-solid fa-house mr-1.5" aria-hidden="true"></i> Ana
+              Sayfa
+            </button>
+            <button
+              id="nav-diagnose"
+              type="button"
+              class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
+            >
+              <i class="fa-solid fa-microscope mr-1.5" aria-hidden="true"></i>
+              Teşhis Laboratuvarı
+            </button>
+            <button
+              id="nav-map"
+              type="button"
+              class="nav-btn px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
+            >
+              <i
+                class="fa-solid fa-map-location-dot mr-1.5"
+                aria-hidden="true"
+              ></i>
+              İkili Risk Haritası
+            </button>
+          </nav>
+
+          <div class="flex items-center gap-2">
+            <div
+              id="esp-status-container"
+              class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-medium text-slate-600"
+              title="ESP32 Saha İstasyonu Durumu"
+              aria-live="polite"
+            >
+              <span
+                id="esp-status-dot"
+                class="w-2.5 h-2.5 rounded-full bg-slate-400"
+              ></span>
+              <span id="esp-status-text">ESP32 Bağlantısı Yok</span>
+            </div>
+
+            <button
+              id="btn-open-settings"
+              type="button"
+              title="Sistem & API Ayarları"
+              aria-label="Sistem ve API Ayarları"
+              class="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition focus:outline-none focus:ring-2 focus:ring-olive-500"
+            >
+              <i class="fa-solid fa-gear" aria-hidden="true"></i>
+            </button>
+
+            <button
+              id="btn-open-admin-auth"
+              type="button"
+              title="Yönetici Eşik Paneli"
+              aria-label="Yönetici Girişi"
+              class="p-2.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition focus:outline-none focus:ring-2 focus:ring-slate-900"
+            >
+              <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Ana İçerik -->
+    <main class="flex-1">
+      <!-- SEKME 1: ANA SAYFA & SİSTEM TANITIMI -->
+      <section
+        id="tab-home"
+        class="tab-content py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16"
+      >
+        <div class="text-center max-w-3xl mx-auto space-y-4">
+          <div
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-olive-100 text-olive-700 text-xs font-semibold"
+          >
+            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+            YOLOv8s-seg & EfficientNet-B0 Çift Kademeli Mimari
+          </div>
+          <h1
+            class="text-4xl sm:text-5xl font-black text-slate-950 tracking-tight leading-tight"
+          >
+            Gemlik Zeytininde Erken Teşhis ve İkili Risk Erken Uyarı Motoru
+          </h1>
+          <p class="text-base sm:text-lg text-slate-600 font-normal">
+            Halkalı Leke (<i>Spilocaea oleagina</i>) lezyon segmentasyonu,
+            RGB(0,0,0) zemin izolasyonu ve Zeytin Pas Akarı (<i>Aceria oleae</i
+            >) morfolojik sınıflandırmasıyla çiftçiye bilimsel zirai reçete.
+          </p>
+          <div class="pt-2 flex flex-wrap justify-center gap-3">
+            <button
+              id="hero-btn-diagnose"
+              type="button"
+              class="px-6 py-3 rounded-xl bg-olive-500 text-white font-semibold shadow-lg shadow-olive-500/25 hover:bg-olive-600 transition flex items-center gap-2"
+            >
+              <i class="fa-solid fa-camera" aria-hidden="true"></i> Teşhis
+              Laboratuvarını Aç
+            </button>
+            <button
+              id="hero-btn-map"
+              type="button"
+              class="px-6 py-3 rounded-xl bg-white border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition flex items-center gap-2"
+            >
+              <i class="fa-solid fa-chart-line" aria-hidden="true"></i> İkili
+              Tehdit Haritası
+            </button>
+          </div>
+        </div>
+
+        <!-- Sinematik Video ve Çıkarım Boru Hattı -->
+        <div
+          class="glass-panel rounded-3xl p-6 sm:p-8 shadow-sm bg-white border border-slate-200"
+        >
+          <div
+            class="flex flex-col md:flex-row items-center justify-between mb-6 pb-4 border-b border-slate-200"
+          >
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900">
+                Sistem Nasıl Çalışıyor?
+              </h2>
+              <p class="text-sm text-slate-500">
+                12 Saniyelik Sinematik Tanıtım & Çift Kademeli Çıkarım Boru
+                Hattı
+              </p>
+            </div>
+            <div class="flex items-center gap-2 mt-2 md:mt-0">
+              <span
+                class="text-xs px-3 py-1 rounded-lg bg-olive-50 text-olive-700 font-semibold border border-olive-200"
+              >
+                <i class="fa-solid fa-tree mr-1" aria-hidden="true"></i> Hedef:
+                Gemlik Zeytini
+              </span>
+              <span
+                class="text-xs px-3 py-1 rounded-lg bg-slate-100 text-slate-600 font-medium"
+              >
+                <i
+                  class="fa-solid fa-bolt text-amber-500 mr-1"
+                  aria-hidden="true"
+                ></i>
+                ONNX Runtime Wasm Multi-Thread
+              </span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div
+              class="lg:col-span-7 aspect-video bg-slate-950 rounded-2xl overflow-hidden shadow-2xl relative flex flex-col justify-center items-center border border-slate-800 group"
+            >
+              <video
+                id="cinematic-demo-video"
+                class="w-full h-full object-cover"
+                controls
+                autoplay
+                loop
+                muted
+                playsinline
+              >
+                <source src="assets/demo_analysis.mp4" type="video/mp4" />
+                Tarayıcınız HTML5 video etiketini desteklemiyor.
+              </video>
+
+              <div
+                class="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition duration-300"
+              >
+                <input
+                  type="file"
+                  id="local-video-input"
+                  accept="video/mp4,video/*"
+                  class="hidden"
+                />
+                <button
+                  type="button"
+                  id="btn-trigger-local-video"
+                  class="px-3 py-1.5 rounded-lg bg-black/75 hover:bg-black text-white text-[11px] font-semibold backdrop-blur border border-white/20 transition flex items-center gap-1.5 shadow focus:outline-none focus:ring-2 focus:ring-white"
+                >
+                  <i class="fa-solid fa-film" aria-hidden="true"></i> Kendi MP4
+                  Videonu Seç
+                </button>
+              </div>
+            </div>
+
+            <div class="lg:col-span-5 space-y-3">
+              <div
+                class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex gap-3"
+              >
+                <span
+                  class="w-7 h-7 rounded-lg bg-olive-500 text-white flex items-center justify-center text-xs font-bold shrink-0"
+                  >1</span
+                >
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900">
+                    Ham Görüntü Girişi & Letterbox
+                  </h4>
+                  <p class="text-[11px] text-slate-600">
+                    Kamera veya galeriden gelen görüntü en-boy oranı korunarak
+                    RGB(114,114,114) dolgu ile 640x640 tensörüne dönüştürülür.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex gap-3"
+              >
+                <span
+                  class="w-7 h-7 rounded-lg bg-olive-500 text-white flex items-center justify-center text-xs font-bold shrink-0"
+                  >2</span
+                >
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900">
+                    YOLOv8s-seg Segmentasyonu
+                  </h4>
+                  <p class="text-[11px] text-slate-600">
+                    Organik yaprak sınırı ve Halkalı Leke lezyonları piksel
+                    düzeyinde ayrıştırılarak Gauss Shoelace formülüyle
+                    <b>Hastalık Şiddeti (%)</b> hesaplanır.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex gap-3"
+              >
+                <span
+                  class="w-7 h-7 rounded-lg bg-olive-500 text-white flex items-center justify-center text-xs font-bold shrink-0"
+                  >3</span
+                >
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900">
+                    Zemin İzolasyonu (RGB 0,0,0)
+                  </h4>
+                  <p class="text-[11px] text-slate-600">
+                    Yaprak maskesi korunarak arka plan (toprak, masa, parmaklar)
+                    tamamen siyaha boyanır ve model gürültüsü sıfırlanır.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex gap-3"
+              >
+                <span
+                  class="w-7 h-7 rounded-lg bg-olive-500 text-white flex items-center justify-center text-xs font-bold shrink-0"
+                  >4</span
+                >
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900">
+                    EfficientNet-B0 & Zirai Reçete
+                  </h4>
+                  <p class="text-[11px] text-slate-600">
+                    İzole yaprak 224x224 tensörle taranarak
+                    <b>Pas Akarı</b> veya <b>Sağlıklı</b> teşhisi
+                    kesinleştirilir, Bakanlık onaylı etken madde reçetesi
+                    basılır.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Doğrulanmış Model Başarımı -->
+        <div class="space-y-6">
+          <div class="text-center max-w-xl mx-auto">
+            <h3 class="text-2xl font-bold text-slate-900">
+              Doğrulanmış Model Başarımı
+            </h3>
+            <p class="text-sm text-slate-500">
+              Roboflow ve PyTorch eğitiminde elde edilen test seti metrikleri
+            </p>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div
+              class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm text-center"
+            >
+              <span
+                class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1"
+                >Yaprak Maske mAP50</span
+              >
+              <span class="text-3xl font-black text-olive-600">%99.4</span>
+              <span class="text-[11px] text-slate-500 block mt-1"
+                >YOLOv8s-seg İzolasyonu</span
+              >
+            </div>
+
+            <div
+              class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm text-center"
+            >
+              <span
+                class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1"
+                >Leke Tespit mAP50</span
+              >
+              <span class="text-3xl font-black text-amber-500">%81.6</span>
+              <span class="text-[11px] text-slate-500 block mt-1"
+                >%91 Hassasiyet (Precision)</span
+              >
+            </div>
+
+            <div
+              class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm text-center"
+            >
+              <span
+                class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1"
+                >Pas Akarı Başarımı</span
+              >
+              <span class="text-3xl font-black text-blue-600">%100</span>
+              <span class="text-[11px] text-slate-500 block mt-1"
+                >Tam Duyarlılık (Recall)</span
+              >
+            </div>
+
+            <div
+              class="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm text-center"
+            >
+              <span
+                class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1"
+                >Genel Val Doğruluğu</span
+              >
+              <span class="text-3xl font-black text-emerald-600">%98.99</span>
+              <span class="text-[11px] text-slate-500 block mt-1"
+                >EfficientNet-B0 Doğrulaması</span
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEKME 2: YAPAY ZEKA TEŞHİS LABORATUVARI -->
+      <section
+        id="tab-diagnose"
+        class="tab-content hidden py-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-8"
+      >
+        <div
+          class="flex flex-col sm:flex-row items-center justify-between gap-4"
+        >
+          <div>
+            <h2 class="text-3xl font-bold text-slate-900">
+              Yapay Zeka Teşhis Laboratuvarı
+            </h2>
+            <p class="text-slate-600 text-sm">
+              Gemlik zeytini yaprağını yükleyin; 2 kademeli ONNX motoru teşhis
+              ve reçete üretsin.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span
+              id="ai-status-badge"
+              class="text-xs px-3 py-1 rounded-full font-semibold bg-amber-100 text-amber-800"
+            >
+              Model Kontrol Ediliyor...
+            </span>
+          </div>
+        </div>
+
+        <div
+          id="onnx-readiness-card"
+          class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3"
+        >
+          <div
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          >
+            <div class="flex flex-wrap items-center gap-2">
+              <i class="fa-solid fa-cube text-olive-600" aria-hidden="true"></i>
+              <span class="text-xs font-bold text-slate-800"
+                >Çift Model Durumu:</span
+              >
+              <span
+                id="model-yolo-status"
+                class="text-[11px] px-2 py-0.5 rounded font-semibold bg-slate-200 text-slate-600"
+              >
+                1. YOLOv8s-seg: Bekleniyor
+              </span>
+              <span
+                id="model-eff-status"
+                class="text-[11px] px-2 py-0.5 rounded font-semibold bg-slate-200 text-slate-600"
+              >
+                2. EfficientNet-B0: Bekleniyor
+              </span>
+            </div>
+            <div>
+              <input
+                type="file"
+                id="onnx-file-input"
+                accept=".onnx"
+                multiple
+                class="hidden"
+              />
+              <button
+                id="btn-trigger-onnx-upload"
+                type="button"
+                class="px-3 py-1.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-olive-500"
+              >
+                <i
+                  class="fa-solid fa-folder-open text-olive-600"
+                  aria-hidden="true"
+                ></i>
+                Yerel .onnx Dosyalarını Seç
+              </button>
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-relaxed">
+            * Sistem <code>models/yolov8_seg.onnx</code> ve
+            <code>models/efficientnet.onnx</code> dosyalarını otomatik tarar.
+            Dosyalar sunucuda yoksa yukarıdaki butondan modellerinizi seçerek
+            tarayıcı WebAssembly hafızasına doğrudan yükleyebilirsiniz.
+            <b>Modeller yüklenmeden kesinlikle sahte çıkarım üretilmez.</b>
+          </p>
+        </div>
+
+        <!-- Erişilebilir Sürükle-Bırak Yükleme Alanı (Inline JS Temizlendi) -->
+        <div
+          id="leaf-drop-zone"
+          class="border-2 border-dashed border-slate-300 rounded-3xl p-8 text-center bg-white space-y-4 hover:border-olive-500 transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-olive-500"
+          role="region"
+          aria-label="Fotoğraf Yükleme Alanı"
+          tabindex="0"
+        >
+          <input
+            type="file"
+            id="leaf-file-input"
+            accept="image/*"
+            class="hidden"
+          />
+          <div
+            class="w-16 h-16 rounded-full bg-olive-50 text-olive-600 flex items-center justify-center mx-auto text-2xl"
+          >
+            <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+          </div>
+          <div>
+            <p class="font-bold text-slate-800">
+              Yaprak Fotoğrafı Seçin veya Sürükleyin
+            </p>
+            <p class="text-xs text-slate-400 mt-1">
+              JPG, PNG, WEBP formatları desteklenir (640x640 otomatik tensör
+              dönüşümü)
+            </p>
+          </div>
+          <div id="leaf-upload-actions" class="flex justify-center gap-3 pt-2">
+            <button
+              id="btn-trigger-upload"
+              type="button"
+              class="px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition focus:outline-none focus:ring-2 focus:ring-slate-900"
+            >
+              <i class="fa-solid fa-image mr-1" aria-hidden="true"></i>
+              Galeriden Seç
+            </button>
+            <button
+              id="btn-trigger-camera"
+              type="button"
+              class="px-5 py-2.5 rounded-xl bg-olive-500 text-white text-xs font-semibold hover:bg-olive-600 transition focus:outline-none focus:ring-2 focus:ring-olive-500"
+            >
+              <i class="fa-solid fa-camera mr-1" aria-hidden="true"></i>
+              Fotoğraf Çek
+            </button>
+          </div>
+        </div>
+
+        <!-- Çıkarım Aşamaları ve HUD Sonuçları -->
+        <div id="pipeline-results" class="hidden space-y-6">
+          <div
+            class="p-4 rounded-2xl bg-slate-900 text-white flex items-center justify-between"
+          >
+            <div>
+              <span
+                id="pipeline-step-title"
+                class="text-sm font-bold text-amber-400 block"
+              >
+                ADIM 1: Görüntü Alındı
+              </span>
+              <p id="pipeline-step-desc" class="text-xs text-slate-300">
+                Piksel verileri tensör formatına hazırlanıyor...
+              </p>
+            </div>
+            <div class="text-right text-xs">
+              <span class="text-slate-400 block">Hedef Bitki:</span>
+              <span class="font-bold text-olive-400">Gemlik Zeytini</span>
+            </div>
+          </div>
+
+          <!-- 640x640 Kare Oranlı Letterbox Canvas Izgarası (Deformasyon Giderildi) -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div
+              class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-center space-y-2"
+            >
+              <span class="text-xs font-bold text-slate-500 block"
+                >1. Ham Yaprak (Letterbox 114)</span
+              >
+              <canvas
+                id="canvas-step1"
+                class="w-full aspect-square rounded-xl bg-slate-100 object-contain"
+              ></canvas>
+            </div>
+            <div
+              class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-center space-y-2"
+            >
+              <span class="text-xs font-bold text-slate-500 block"
+                >2. YOLOv8s-seg Segmentasyon</span
+              >
+              <canvas
+                id="canvas-step2"
+                class="w-full aspect-square rounded-xl bg-slate-100 object-contain"
+              ></canvas>
+              <div
+                class="flex justify-between text-[11px] text-slate-600 px-1 pt-1"
+              >
+                <span
+                  >Yaprak:
+                  <b id="metric-leaf-conf" class="text-emerald-600"
+                    >%--</b
+                  ></span
+                >
+                <span
+                  >Şiddet:
+                  <b id="metric-severity" class="text-red-600">%--</b></span
+                >
+              </div>
+            </div>
+            <div
+              class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm text-center space-y-2"
+            >
+              <span class="text-xs font-bold text-slate-500 block"
+                >3. İzole Yaprak (RGB 0,0,0)</span
+              >
+              <canvas
+                id="canvas-step3"
+                class="w-full aspect-square rounded-xl bg-black object-contain"
+              ></canvas>
+            </div>
+          </div>
+
+          <!-- Teşhis ve Reçete Kartı İskeleti -->
+          <div
+            id="diagnosis-card"
+            class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4"
+          >
+            <div
+              class="flex items-center justify-between border-b border-slate-100 pb-3"
+            >
+              <div>
+                <span
+                  class="text-xs font-bold uppercase tracking-wider text-slate-400"
+                >
+                  4. Kademe Sınıflandırma ve Doğrulama
+                </span>
+                <h3
+                  id="diagnosis-title"
+                  class="text-xl font-bold text-slate-900 mt-0.5"
+                >
+                  EfficientNet-B0 Çıkarımı Bekleniyor
+                </h3>
+              </div>
+              <span
+                id="diagnosis-badge"
+                class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600"
+              >
+                Analiz Başlatılmadı
+              </span>
+            </div>
+
+            <!-- Model Güven Çubuğu Animasyon Hattı -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs font-semibold">
+                <span class="text-slate-600"
+                  >Model Doğrulama Güveni (Confidence):</span
+                >
+                <span
+                  id="diagnosis-confidence-text"
+                  class="text-olive-600 font-mono"
+                  >%0.0</span
+                >
+              </div>
+              <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  id="diagnosis-confidence-bar"
+                  class="h-full bg-olive-500 rounded-full transition-all duration-700 ease-out"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+
+            <div
+              id="diagnosis-prescription-box"
+              class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-2"
+            >
+              <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-file-prescription text-olive-600"></i>
+                Bakanlık & Entegre Mücadele Zirai Reçetesi
+              </div>
+              <p id="diagnosis-prescription-text">
+                Yaprak görüntüsü yüklendiğinde lezyon morfolojisi taranacak ve
+                Gemlik zeytini fenolojisine uygun etken madde önerisi
+                sunulacaktır.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SEKME 3: İKİLİ HASTALIK RİSK HARİTASI VE TARİHSEL İKLİM -->
+      <section
+        id="tab-map"
+        class="tab-content hidden py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-10"
+      >
+        <div
+          class="flex flex-col md:flex-row md:items-center justify-between gap-4"
+        >
+          <div>
+            <h2 class="text-3xl font-bold text-slate-900">
+              İkili Hastalık Risk Haritası ve İklim Takibi
+            </h2>
+            <p class="text-slate-600 text-sm">
+              Halkalı Leke ve Zeytin Pas Akarı enfeksiyon ihtimallerini
+              mikroklima ve IoT sensörleriyle eşzamanlı izleyin.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span
+              id="map-selected-location-chip"
+              class="px-3.5 py-2 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 flex items-center gap-1.5"
+            >
+              <i
+                class="fa-solid fa-location-dot text-olive-600"
+                aria-hidden="true"
+              ></i>
+              <span id="map-location-name-label">Gemlik Havzası, Bursa</span>
+            </span>
+            <button
+              id="btn-update-location"
+              type="button"
+              class="px-4 py-2 rounded-xl bg-olive-500 text-white text-xs font-semibold hover:bg-olive-600 transition flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-olive-500"
+            >
+              <i class="fa-solid fa-location-crosshairs" aria-hidden="true"></i>
+              Konumumu Al
+            </button>
+          </div>
+        </div>
+
+        <!-- Harita ve Telemetri Özeti -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-8 flex flex-col space-y-2">
+            <div
+              id="risk-map"
+              class="bg-slate-100 rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-[500px] relative z-10"
+              role="application"
+              aria-label="CBS Risk Haritası"
+            ></div>
+            <div
+              class="flex items-center justify-between px-2 text-[11px] text-slate-500"
+            >
+              <span>
+                <i
+                  class="fa-solid fa-circle-info text-olive-600 mr-1"
+                  aria-hidden="true"
+                ></i>
+                İpucu: Haritaya tıklayarak veya pini sürükleyerek bahçe
+                konumunuzu değiştirebilirsiniz.
+              </span>
+              <span class="font-mono text-[10px]" id="map-coord-display"
+                >--°N, --°E</span
+              >
+            </div>
+          </div>
+
+          <div class="lg:col-span-4 space-y-4">
+            <!-- Halkalı Leke Tehdidi Kartı -->
+            <div
+              class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1"
+                >
+                  <i
+                    class="fa-solid fa-circle-dot text-amber-500"
+                    aria-hidden="true"
+                  ></i>
+                  Halkalı Leke Tehdidi
+                </span>
+                <span
+                  class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700"
+                  id="peacock-risk-badge"
+                >
+                  %--
+                </span>
+              </div>
+              <span
+                class="text-lg font-black text-slate-900 block"
+                id="peacock-risk-title"
+                >Değerlendiriliyor...</span
+              >
+              <p
+                class="text-[11px] text-slate-500 leading-snug"
+                id="peacock-risk-desc"
+              >
+                Sıcaklık ve yağış koşulları mantar sporlarının çimlenmesi için
+                analiz ediliyor.
+              </p>
+            </div>
+
+            <!-- Pas Akarı Tehdidi Kartı -->
+            <div
+              class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1"
+                >
+                  <i
+                    class="fa-solid fa-bug text-blue-500"
+                    aria-hidden="true"
+                  ></i>
+                  Pas Akarı Tehdidi
+                </span>
+                <span
+                  class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700"
+                  id="mite-risk-badge"
+                >
+                  %--
+                </span>
+              </div>
+              <span
+                class="text-lg font-black text-slate-900 block"
+                id="mite-risk-title"
+                >Değerlendiriliyor...</span
+              >
+              <p
+                class="text-[11px] text-slate-500 leading-snug"
+                id="mite-risk-desc"
+              >
+                Sıcaklık ve kuru nem değerleri taze sürgünlerde zararlı
+                popülasyonu için taranıyor.
+              </p>
+            </div>
+
+            <!-- Meteoroloji İstasyonu -->
+            <div
+              class="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+                  >Meteoroloji İstasyonu</span
+                >
+                <span
+                  class="text-[11px] font-semibold text-olive-600"
+                  id="active-weather-provider-label"
+                  >OPEN-METEO</span
+                >
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs pt-1">
+                <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                  <span class="text-slate-400 block text-[10px]"
+                    >Hava Sıcaklığı</span
+                  >
+                  <span class="font-bold text-slate-800" id="weather-temp-val"
+                    >--.- °C</span
+                  >
+                </div>
+                <div class="bg-slate-50 p-2 rounded-lg border border-slate-100">
+                  <span class="text-slate-400 block text-[10px]"
+                    >Bağıl Nem</span
+                  >
+                  <span class="font-bold text-slate-800" id="weather-hum-val"
+                    >--.- %</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <!-- ESP32 IoT Canlı Telemetri -->
+            <div
+              class="p-4 rounded-2xl bg-slate-900 text-white shadow-sm space-y-2"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="text-xs font-bold text-slate-400 uppercase tracking-wider"
+                  >Saha İstasyonu (ESP32)</span
+                >
+                <span
+                  class="w-2.5 h-2.5 rounded-full bg-slate-500"
+                  id="esp-telemetry-dot"
+                ></span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                <div
+                  class="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700"
+                >
+                  <span class="text-[10px] text-slate-400 block"
+                    >Sensör Sıcaklığı</span
+                  >
+                  <span class="text-lg font-bold" id="esp-temp-val"
+                    >--.- °C</span
+                  >
+                </div>
+                <div
+                  class="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700"
+                >
+                  <span class="text-[10px] text-slate-400 block"
+                    >Sensör Nemi</span
+                  >
+                  <span class="text-lg font-bold" id="esp-hum-val">--.- %</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 60 GÜNLÜK BİYOLOJİK İNKÜBASYON PENCERESİ (-30g / +16g) -->
+        <div
+          class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6"
+        >
+          <div
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4"
+          >
+            <div>
+              <div
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold mb-1"
+              >
+                <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                60 Günlük Biyolojik İnkübasyon Penceresi
+              </div>
+              <h3 class="text-xl font-bold text-slate-900">
+                Geçmiş 30 Gün Yağış/Nem Odakları ve Gelecek 16 Gün İkili Risk
+                Tahmini
+              </h3>
+              <p class="text-xs text-slate-500">
+                Halkalı Leke kuluçka dönemi analizi ve Pas Akarı için kritik
+                kuru-ılık günler.
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2 self-start sm:self-auto">
+              <div
+                class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-center"
+              >
+                <span class="text-[10px] text-slate-400 block"
+                  >Geçmiş Yağış (-30g)</span
+                >
+                <span
+                  class="text-xs font-black text-slate-800"
+                  id="timeline-past-rain-val"
+                  >-- mm</span
+                >
+              </div>
+              <div
+                class="px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 text-center"
+              >
+                <span class="text-[10px] text-red-500 block"
+                  >Kritik Gün (-30g)</span
+                >
+                <span
+                  class="text-xs font-black text-red-700"
+                  id="timeline-past-risk-days-val"
+                  >-- Gün</span
+                >
+              </div>
+              <div
+                class="px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-center"
+              >
+                <span class="text-[10px] text-blue-500 block"
+                  >Beklenen Yağış (+16g)</span
+                >
+                <span
+                  class="text-xs font-black text-blue-700"
+                  id="timeline-future-rain-val"
+                  >-- mm</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <div
+            id="timeline-scroll-strip"
+            class="flex items-stretch gap-3 overflow-x-auto pb-4 pt-1 snap-x scrollbar-thin"
+          >
+            <div class="w-full text-center py-8 text-xs text-slate-400">
+              <i
+                class="fa-solid fa-spinner fa-spin mr-1"
+                aria-hidden="true"
+              ></i>
+              İnkübasyon verileri yükleniyor...
+            </div>
+          </div>
+        </div>
+
+        <!-- 365 GÜNLÜK ERA5 TARİHSEL İKLİM ARŞİVİ VE KIŞ SOĞUKLAMA PANELİ -->
+        <div
+          id="annual-climate-card"
+          class="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6"
+        >
+          <div
+            class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4"
+          >
+            <div>
+              <div
+                class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-olive-100 text-olive-800 text-[11px] font-bold mb-1"
+              >
+                <i class="fa-solid fa-snowflake" aria-hidden="true"></i>
+                ERA5 Reanalysis Tarihsel İklim & Fenoloji
+              </div>
+              <h3 class="text-xl font-bold text-slate-900">
+                Son 365 Gün İklim Geçmişi ve Kış Soğuklama İhtiyacı
+              </h3>
+              <p class="text-xs text-slate-500">
+                Gemlik çeşidi için çiçeklenme verimini belirleyen kritik
+                soğuklama birikimi (&lt;7.2°C) ve yıllık kümülatif yağış.
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span
+                id="annual-chilling-status-badge"
+                class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700"
+              >
+                Hesaplanıyor...
+              </span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div
+              class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2"
+            >
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-slate-600"
+                  >Kış Soğuklama Birikimi</span
+                >
+                <span class="text-slate-400">Hedef: 400 - 600 Saat</span>
+              </div>
+              <div class="flex items-baseline gap-1">
+                <span
+                  id="annual-chilling-hours-val"
+                  class="text-3xl font-black text-slate-900"
+                  >---</span
+                >
+                <span class="text-xs font-semibold text-slate-500"
+                  >saat (&lt;7.2°C)</span
+                >
+              </div>
+              <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  id="annual-chilling-progress-bar"
+                  class="h-full bg-blue-500 rounded-full transition-all duration-500"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+
+            <div
+              class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2"
+            >
+              <span class="font-bold text-slate-600 text-xs block"
+                >Yıllık Kümülatif Yağış</span
+              >
+              <div class="flex items-baseline gap-1">
+                <span
+                  id="annual-total-rain-val"
+                  class="text-3xl font-black text-olive-600"
+                  >---</span
+                >
+                <span class="text-xs font-semibold text-slate-500"
+                  >mm / yıl</span
+                >
+              </div>
+              <p class="text-[11px] text-slate-500 leading-snug">
+                Gemlik zeytininde optimal dane tutumu için yıllık asgari 500-600
+                mm yağış gereklidir.
+              </p>
+            </div>
+
+            <div
+              class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2"
+            >
+              <span class="font-bold text-slate-600 text-xs block"
+                >Yıllık Mantar Patlama Günleri</span
+              >
+              <div class="flex items-baseline gap-1">
+                <span
+                  id="annual-risk-days-val"
+                  class="text-3xl font-black text-red-600"
+                  >---</span
+                >
+                <span class="text-xs font-semibold text-slate-500"
+                  >yüksek riskli gün</span
+                >
+              </div>
+              <p class="text-[11px] text-slate-500 leading-snug">
+                Geçtiğimiz 1 yılda spor çimlenmesi için kritik nem ve 10-20°C
+                şartlarının birleştiği gün sayısı.
+              </p>
+            </div>
+          </div>
+
+          <!-- Aylık İklim Dağılım Tablosu Konteyneri -->
+          <div class="space-y-2 pt-2">
+            <span
+              class="text-xs font-bold uppercase tracking-wider text-slate-400 block"
+            >
+              12 Aylık Sıcaklık ve Yağış Profili
+            </span>
+            <div
+              id="annual-monthly-grid"
+              class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2"
+            >
+              <div
+                class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-center text-xs text-slate-400"
+              >
+                Veriler yükleniyor...
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- SİSTEM VE API AYARLARI MODALI -->
+    <div
+      id="modal-settings"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-settings-title"
+      tabindex="-1"
+    >
+      <div
+        class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+      >
+        <div
+          class="flex items-center justify-between border-b border-slate-100 pb-4"
+        >
+          <h3
+            id="modal-settings-title"
+            class="text-xl font-bold text-slate-900 flex items-center gap-2"
+          >
+            <i
+              class="fa-solid fa-sliders text-olive-500"
+              aria-hidden="true"
+            ></i>
+            Sistem & API Ayarları
+          </h3>
+          <button
+            id="btn-close-settings"
+            type="button"
+            aria-label="Ayarları Kapat"
+            class="text-slate-400 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 rounded-lg p-1"
+          >
+            <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="space-y-5">
+          <div class="p-3.5 rounded-2xl bg-olive-50 border border-olive-200">
+            <span class="text-xs font-bold text-olive-900 block mb-0.5"
+              >Hedef Bitki Çeşidi</span
+            >
+            <p class="text-xs text-olive-700">
+              <b>Gemlik Zeytini (<i>Olea europaea cv. Gemlik</i>)</b> — Modeller
+              doğrudan bu çeşidin fenolojik parametrelerine göre kalibre
+              edilmiştir.
+            </p>
+          </div>
+
+          <div class="space-y-2 border-t border-slate-100 pt-3">
+            <label
+              for="cfg-weather-provider-select"
+              class="block text-xs font-bold text-slate-700 uppercase tracking-wider"
+            >
+              Meteorolojik Veri Servisi (API Sağlayıcısı)
+            </label>
+            <select
+              id="cfg-weather-provider-select"
+              class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-olive-500 focus:outline-none bg-slate-50"
+            >
+              <option value="open-meteo">
+                Open-Meteo (Ücretsiz — API Anahtarı Gerekmez)
+              </option>
+              <option value="openweather">
+                OpenWeatherMap (Kullanıcı API Anahtarı Gerekir)
+              </option>
+              <option value="weatherapi">
+                WeatherAPI.com (Kullanıcı API Anahtarı Gerekir)
+              </option>
+            </select>
+
+            <div id="cfg-weather-key-wrapper" class="hidden space-y-1 pt-1">
+              <label
+                for="cfg-weather-api-key"
+                class="block text-[11px] font-medium text-slate-600"
+              >
+                Seçili Servisin API Anahtarı (API Key)
+              </label>
+              <input
+                type="password"
+                id="cfg-weather-api-key"
+                placeholder="API anahtarınızı yapıştırın"
+                autocomplete="off"
+                class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-olive-500 focus:outline-none font-mono"
+              />
+            </div>
+          </div>
+
+          <div class="space-y-3 border-t border-slate-100 pt-3">
+            <label
+              class="block text-xs font-bold text-slate-700 uppercase tracking-wider"
+            >
+              ESP32 & IoT Düğüm Noktası
+            </label>
+            <div>
+              <label
+                for="cfg-firebase-url"
+                class="block text-[11px] text-slate-600 mb-1"
+                >Firebase Realtime DB URL</label
+              >
+              <input
+                type="text"
+                id="cfg-firebase-url"
+                placeholder="https://projeniz.firebaseio.com"
+                class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-olive-500 focus:outline-none font-mono"
+              />
+            </div>
+            <div>
+              <label
+                for="cfg-firebase-node"
+                class="block text-[11px] text-slate-600 mb-1"
+                >Cihaz Düğüm Yolu (Node Path)</label
+              >
+              <input
+                type="text"
+                id="cfg-firebase-node"
+                value="esp32_station"
+                class="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-olive-500 focus:outline-none font-mono"
+              />
+            </div>
+          </div>
+
+          <div class="space-y-2 border-t border-slate-100 pt-3">
+            <label
+              class="block text-xs font-bold text-slate-700 uppercase tracking-wider"
+            >
+              Cihaz İzinleri
+            </label>
+            <div class="grid grid-cols-3 gap-2">
+              <button
+                id="btn-perm-camera"
+                type="button"
+                class="p-2.5 rounded-xl border border-slate-200 text-center hover:bg-slate-50 transition text-xs font-medium focus:ring-2 focus:ring-olive-500"
+              >
+                <i
+                  class="fa-solid fa-camera block text-sm mb-1 text-slate-700"
+                  aria-hidden="true"
+                ></i>
+                Kamera
+              </button>
+              <button
+                id="btn-perm-location"
+                type="button"
+                class="p-2.5 rounded-xl border border-slate-200 text-center hover:bg-slate-50 transition text-xs font-medium focus:ring-2 focus:ring-olive-500"
+              >
+                <i
+                  class="fa-solid fa-location-dot block text-sm mb-1 text-slate-700"
+                  aria-hidden="true"
+                ></i>
+                Konum
+              </button>
+              <button
+                id="btn-perm-notif"
+                type="button"
+                class="p-2.5 rounded-xl border border-slate-200 text-center hover:bg-slate-50 transition text-xs font-medium focus:ring-2 focus:ring-olive-500"
+              >
+                <i
+                  class="fa-solid fa-bell block text-sm mb-1 text-slate-700"
+                  aria-hidden="true"
+                ></i>
+                Bildirim
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+          <button
+            id="btn-cancel-settings"
+            type="button"
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition focus:outline-none focus:ring-2 focus:ring-slate-300"
+          >
+            Vazgeç
+          </button>
+          <button
+            id="btn-save-settings"
+            type="button"
+            class="px-5 py-2 rounded-xl text-xs font-semibold bg-olive-500 text-white hover:bg-olive-600 transition focus:outline-none focus:ring-2 focus:ring-olive-500"
+          >
+            Ayarları Kaydet
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- YÖNETİCİ KİMLİK DOĞRULAMA MODALI -->
+    <div
+      id="modal-admin-auth"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-admin-auth-title"
+      tabindex="-1"
+    >
+      <div
+        class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl relative text-center"
+      >
+        <div
+          class="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center mx-auto text-lg"
+        >
+          <i class="fa-solid fa-lock" aria-hidden="true"></i>
+        </div>
+        <h3
+          id="modal-admin-auth-title"
+          class="text-lg font-bold text-slate-900"
+        >
+          Yönetici Girişi
+        </h3>
+        <p class="text-xs text-slate-500">
+          Biyolojik risk eşik değerlerini değiştirmek için yetkili parolanızı
+          girin.
+        </p>
+
+        <input
+          type="password"
+          id="admin-password-input"
+          placeholder="Yönetici Parolası"
+          autocomplete="current-password"
+          class="w-full px-3 py-2 text-sm text-center border border-slate-200 rounded-xl focus:ring-2 focus:ring-slate-900 focus:outline-none tracking-widest font-mono"
+        />
+        <p
+          id="admin-auth-error"
+          class="text-xs text-red-500 font-medium hidden"
+          role="alert"
+        >
+          Hatalı parola! Lütfen tekrar deneyin.
+        </p>
+
+        <div class="flex gap-2 pt-2">
+          <button
+            id="btn-cancel-admin-auth"
+            type="button"
+            class="flex-1 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition focus:outline-none focus:ring-2 focus:ring-slate-300"
+          >
+            İptal
+          </button>
+          <button
+            id="btn-submit-admin-auth"
+            type="button"
+            class="flex-1 py-2 rounded-xl text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition focus:outline-none focus:ring-2 focus:ring-slate-900"
+          >
+            Giriş Yap
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EPİDEMİYOLOJİK EŞİK YÖNETİMİ DASHBOARD MODALI -->
+    <div
+      id="modal-admin-dashboard"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-admin-dash-title"
+      tabindex="-1"
+    >
+      <div
+        class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative"
+      >
+        <div
+          class="flex items-center justify-between border-b border-slate-100 pb-4"
+        >
+          <div>
+            <h3
+              id="modal-admin-dash-title"
+              class="text-xl font-bold text-slate-900 flex items-center gap-2"
+            >
+              <i
+                class="fa-solid fa-shield-halved text-emerald-600"
+                aria-hidden="true"
+              ></i>
+              Epidemiyolojik Eşik Paneli
+            </h3>
+            <p class="text-xs text-slate-500">
+              Gemlik zeytini için spor çimlenme ve pas akarı popülasyon
+              sınırlarını düzenleyin.
+            </p>
+          </div>
+          <button
+            id="btn-close-admin-dashboard"
+            type="button"
+            aria-label="Paneli Kapat"
+            class="text-slate-400 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-400 rounded-lg p-1"
+          >
+            <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Halkalı Leke Eşikleri -->
+          <div
+            class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3"
+          >
+            <span class="text-xs font-bold text-slate-700 block">
+              Halkalı Leke (<i>Spilocaea oleagina</i>) Tetikleme Kriterleri
+            </span>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label
+                  for="adm-peacock-hum"
+                  class="block text-[11px] text-slate-500 mb-1"
+                  >Kritik Bağıl Nem (%)</label
+                >
+                <input
+                  type="number"
+                  id="adm-peacock-hum"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value="85"
+                  class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-500 mb-1"
+                  >Sıcaklık Aralığı (°C)</label
+                >
+                <div class="flex items-center gap-1">
+                  <input
+                    type="number"
+                    id="adm-peacock-temp-min"
+                    placeholder="Min"
+                    value="10"
+                    step="0.5"
+                    aria-label="Halkalı Leke Minimum Sıcaklık"
+                    class="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-lg text-center"
+                  />
+                  <span class="text-slate-400">-</span>
+                  <input
+                    type="number"
+                    id="adm-peacock-temp-max"
+                    placeholder="Max"
+                    value="20"
+                    step="0.5"
+                    aria-label="Halkalı Leke Maksimum Sıcaklık"
+                    class="w-1/2 px-2 py-1.5 text-xs border border-slate-200 rounded-lg text-center"
+                  />
+                </div>
+              </div>
+              <div>
+                <label
+                  for="adm-peacock-rain"
+                  class="block text-[11px] text-slate-500 mb-1"
+                  >Kritik 48s Yağış (mm)</label
+                >
+                <input
+                  type="number"
+                  id="adm-peacock-rain"
+                  min="0"
+                  step="0.1"
+                  value="2.0"
+                  class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Pas Akarı Eşikleri -->
+          <div
+            class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3"
+          >
+            <span class="text-xs font-bold text-slate-700 block">
+              Zeytin Pas Akarı (<i>Aceria oleae</i>) Kolonizasyon Kriterleri
+            </span>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label
+                  for="adm-mite-temp"
+                  class="block text-[11px] text-slate-500 mb-1"
+                  >Aktivite Alt Sıcaklığı (°C)</label
+                >
+                <input
+                  type="number"
+                  id="adm-mite-temp"
+                  step="0.5"
+                  value="22.0"
+                  class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label
+                  for="adm-mite-hum"
+                  class="block text-[11px] text-slate-500 mb-1"
+                  >Maksimum Bağıl Nem (%)</label
+                >
+                <input
+                  type="number"
+                  id="adm-mite-hum"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value="70"
+                  class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <div>
+                <label
+                  for="adm-mite-rain"
+                  class="block text-[11px] text-slate-500 mb-1"
+                  >Yağış Baskılama (mm)</label
+                >
+                <input
+                  type="number"
+                  id="adm-mite-rain"
+                  min="0"
+                  step="0.1"
+                  value="5.0"
+                  class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-between items-center">
+          <span
+            id="admin-save-status"
+            class="text-xs font-medium text-emerald-600 hidden"
+            role="status"
+          >
+            Eşik değerleri güncellendi!
+          </span>
+          <div class="flex gap-2 ml-auto">
+            <button
+              id="btn-cancel-admin-dashboard"
+              type="button"
+              class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition focus:outline-none focus:ring-2 focus:ring-slate-300"
+            >
+              Kapat
+            </button>
+            <button
+              id="btn-save-admin-thresholds"
+              type="button"
+              class="px-5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+              Kaydet ve Yeniden Hesapla
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kütüphaneler: Leaflet ve Sürümü Sabitlenmiş ONNX Runtime Web -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+
+    <!-- Uygulama Orkestratörü (ES6 Modülü) -->
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>

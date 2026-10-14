@@ -1,0 +1,311 @@
+/**
+ * GemlikZeytinAI — Endüstriyel Stil ve Animasyon Katmanı
+ * Dosya: css/styles.css
+ * Sürüm: 3.0.0 (Kurumsal Üretim Sürümü)
+ * Sorumluluk: Z-index stacking context, GPU composited HUD lazer taraması, CBS harita izolasyonu
+ */
+
+/* ==========================================================================
+   1. CSS Değişkenleri ve Tasarım Belirteçleri (Design Tokens)
+   ========================================================================== */
+:root {
+  /* Gemlik Zeytini Renk Paleti (Tailwind ile Senkronize) */
+  --color-olive-50: #f6f7f2;
+  --color-olive-100: #ebede2;
+  --color-olive-200: #d7dbc5;
+  --color-olive-500: #5c6f34;
+  --color-olive-600: #485827;
+  --color-olive-700: #38451e;
+  --color-olive-800: #2c3718;
+  --color-olive-900: #1e2610;
+
+  /* HUD ve Lazer Tarama Belirteçleri */
+  --hud-laser-color: #f59e0b;
+  --hud-laser-glow: rgba(245, 158, 11, 0.45);
+  --hud-grid-color: rgba(92, 111, 52, 0.2);
+
+  /* Cam Efektleri (Glassmorphism) */
+  --surface-glass-bg: rgba(255, 255, 255, 0.9);
+  --surface-glass-border: rgba(226, 232, 240, 0.85);
+  --modal-backdrop-bg: rgba(15, 23, 42, 0.75);
+
+  /* Geçiş Süreleri (Easing Curves) */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   2. Cam Panel ve Modal Katmanları
+   ========================================================================== */
+.glass-panel {
+  background: var(--surface-glass-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--surface-glass-border);
+}
+
+.modal-backdrop {
+  background: var(--modal-backdrop-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: opacity var(--transition-normal);
+}
+
+/* ==========================================================================
+   3. Esri CBS & Leaflet Harita İzolasyonu (Stacking Context Fix)
+   ========================================================================== */
+/**
+ * Harita bileşeni kendi bağımsız stacking context'ine izole edilir.
+ * Böylece Leaflet'in dahili katman hiyerarşisi (tile: 200, marker: 600, popup: 700)
+ * bozulmazken haritanın tamamı Header (z-40) ve Modal (z-50) altında kalır.
+ */
+#risk-map {
+  position: relative;
+  z-index: 10;
+  isolation: isolate;
+  background-color: #f8fafc;
+}
+
+.leaflet-container {
+  font-family: inherit !important;
+  outline: none;
+  background-color: #f8fafc !important;
+}
+
+.leaflet-tile {
+  transition: opacity 0.25s linear;
+}
+
+/* Esri CBS Popup Kart Biçimlendirmesi */
+.leaflet-popup-content-wrapper {
+  border-radius: 1rem !important;
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.12),
+    0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  padding: 0.25rem !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0.75rem 1rem !important;
+  line-height: 1.5 !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(255, 255, 255, 0.98) !important;
+}
+
+/* ==========================================================================
+   4. Çift Kademeli ONNX Çıkarım HUD ve Lazer Tarama Animasyonları
+   ========================================================================== */
+/**
+ * Dokümantasyon Madde 4.7: YOLOv8s-seg için yukarıdan aşağıya sarı lazer taraması.
+ * GPU Compositor optimizasyonu: Layout reflow tetikleyen 'top' yerine
+ * sıfır boyama maliyeti sunan 'transform: translateY' tekniği kullanılmıştır.
+ */
+.hud-scanner-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Donanım Hızlandırmalı Lazer Taşıyıcı ve Işık Çizgisi */
+.hud-laser-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+  transform: translateY(-100%);
+  will-change: transform, opacity;
+  animation: hud-laser-sweep 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* 2px Keskin Sarı Lazer Çizgisi */
+.hud-laser-line::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--hud-laser-color);
+  box-shadow:
+    0 0 12px 2px var(--hud-laser-color),
+    0 0 24px 4px var(--hud-laser-glow);
+}
+
+/* Lazer Işığını Takip Eden Gradyan İz (Yukarı Yönlü Kuyruk) */
+.hud-laser-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  height: 32px;
+  background: linear-gradient(
+    to top,
+    rgba(245, 158, 11, 0.25) 0%,
+    rgba(245, 158, 11, 0) 100%
+  );
+}
+
+@keyframes hud-laser-sweep {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0%);
+    opacity: 0;
+  }
+}
+
+/* Çıkarım Tuvali (Canvas) Net Piksel Oluşturma (Tüm 4 Kademe Dahil) */
+canvas.segmentation-canvas,
+#canvas-step1,
+#canvas-step2,
+#canvas-step3,
+#canvas-step4 {
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ==========================================================================
+   5. GPU Hızlandırmalı Telemetri Titreme Efektleri (Zero-Repaint Pulse)
+   ========================================================================== */
+/**
+ * Sürekli box-shadow animasyonu yerine ::after ile transform: scale ve opacity kullanılır.
+ * Bu sayede CPU boyama döngüsü (repaint) tetiklenmez, GPU Composite Thread çalışır.
+ */
+.pulse-online,
+.pulse-warning {
+  position: relative;
+}
+
+.pulse-online::after,
+.pulse-warning::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+  animation: gpu-pulse 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+.pulse-online::after {
+  background-color: rgba(16, 185, 129, 0.7);
+}
+
+.pulse-warning::after {
+  background-color: rgba(239, 68, 68, 0.7);
+}
+
+@keyframes gpu-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   6. Yükleme İskeleti (Skeleton Loading)
+   ========================================================================== */
+@keyframes shimmer-sweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-loading {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 25%,
+    #e2e8f0 50%,
+    #f1f5f9 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 1.6s ease-in-out infinite;
+  will-change: background-position;
+}
+
+/* ==========================================================================
+   7. Çapraz Tarayıcı Standart Kaydırma Çubukları (Cross-Browser Scrollbars)
+   ========================================================================== */
+/* W3C Standardı: Style Recalculation yükünü önlemek için yalnızca kök ve spesifik sınıflar hedeflenir */
+html,
+body,
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+/* WebKit ve Blink Tabanlı Tarayıcılar (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  transition: background var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ==========================================================================
+   8. Mikro Etkileşimler ve İklim Kartı Geçişleri
+   ========================================================================== */
+#annual-chilling-progress-bar,
+#diagnosis-confidence-bar {
+  will-change: width;
+  transition: width var(--transition-smooth);
+}
+
+.tab-content {
+  animation: tabFadeIn var(--transition-normal);
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
